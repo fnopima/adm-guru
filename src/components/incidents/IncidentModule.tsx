@@ -759,7 +759,7 @@ export const IncidentModule: React.FC = () => {
                 >
                   {teachers.map(t => (
                     <option key={t.id} value={t.id}>
-                      {t.name}{t.title ? ` (${t.title})` : ''} - {t.role === 'admin' ? 'Kepala Sekolah / Admin' : 'Dewan Guru'}
+                      {t.name}{t.title ? ` (${t.title})` : ''} - NIP: {t.nip || '-'}
                     </option>
                   ))}
                 </select>
@@ -797,7 +797,7 @@ export const IncidentModule: React.FC = () => {
         subtitle="REKAPITULASI DOKUMENTASI PEMBINAAN SISWA"
         classNameLabel={selectedClassId !== 'ALL' ? classes.find(c => c.id === selectedClassId)?.name : 'Semua Kelas'}
         orientation="landscape"
-        signatureType="headmaster_only"
+        signatureType="incident"
       >
         <table className="w-full text-[10px] border border-slate-900 border-collapse">
           <thead>
