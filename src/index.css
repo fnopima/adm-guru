@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@media print {
+  /* Reset HTML and Body */
+  html, body {
+    background: white !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset all scroll clipping containers so multi-page printing works seamlessly */
+  #root,
+  #root > div,
+  main,
+  .overflow-hidden,
+  .overflow-y-auto,
+  .h-screen,
+  .h-full,
+  .max-h-\[95vh\] {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+  }
+
+  /* Hide navigation, headers, footers, and modal controls */
+  header,
+  nav,
+  aside,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Modal Backdrop & Container Reset */
+  .fixed.inset-0 {
+    position: static !important;
+    background: white !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .bg-slate-900.rounded-xl {
+    background: white !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  /* Printable Document Container */
+  #printable-document {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    display: block !important;
+  }
+
+  @page {
+    margin: 8mm 10mm;
+  }
+
+  .page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+

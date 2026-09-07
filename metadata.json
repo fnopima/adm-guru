@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Administrasi Guru & Pembelajaran",
+  "description": "Aplikasi pengelolaan presensi harian siswa, jurnal mengajar, pengolahan nilai sumatif, penjadwalan, dan catatan kejadian murid.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
