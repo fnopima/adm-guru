@@ -1743,7 +1743,7 @@ export const SettingsModule: React.FC = () => {
                   <option value="">-- Belum Ditentukan --</option>
                   {teachers.map(t => (
                     <option key={t.id} value={t.id}>
-                      {t.name}{t.title ? ` (${t.title})` : ''}
+                      {t.name}
                     </option>
                   ))}
                 </select>
@@ -1876,7 +1876,7 @@ export const SettingsModule: React.FC = () => {
                   <option value="">-- Belum Ditentukan --</option>
                   {teachers.map(t => (
                     <option key={t.id} value={t.id}>
-                      {t.name}{t.title ? ` (${t.title})` : ''}
+                      {t.name}
                     </option>
                   ))}
                 </select>

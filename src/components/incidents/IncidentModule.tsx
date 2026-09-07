@@ -759,7 +759,7 @@ export const IncidentModule: React.FC = () => {
                 >
                   {teachers.map(t => (
                     <option key={t.id} value={t.id}>
-                      {t.name}{t.title ? ` (${t.title})` : ''} - NIP: {t.nip || '-'}
+                      {t.name} - NIP: {t.nip || '-'}
                     </option>
                   ))}
                 </select>

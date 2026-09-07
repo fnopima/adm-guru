@@ -55,8 +55,28 @@ export const ScheduleModule: React.FC = () => {
   const homeroomTeacher = teachers.find(t => t.id === currentClass?.homeroomTeacherId);
   const canEdit = canEditSchedule(selectedClassId);
 
-  // Filter subjects for current class
+  // Filter subjects for current class (fallback to all subjects if none configured specifically)
   const classSubjects = subjects.filter(s => s.classId === selectedClassId);
+  const availableSubjects = classSubjects.length > 0 ? classSubjects : subjects;
+
+  // Helper to find the assigned teacher for a subject from Settings (Pengaturan > Mata Pelajaran dan Pengampu)
+  const getSubjectAssignedTeacherId = (subjectId: string): string => {
+    if (!subjectId) return '';
+    const sub = subjects.find(s => s.id === subjectId);
+    if (sub?.teacherId) {
+      return sub.teacherId;
+    }
+    // Fallback: check if the same subject name configured in settings has a teacher assigned
+    if (sub?.name) {
+      const matchByName = subjects.find(
+        s => s.name.trim().toLowerCase() === sub.name.trim().toLowerCase() && s.teacherId
+      );
+      if (matchByName?.teacherId) {
+        return matchByName.teacherId;
+      }
+    }
+    return '';
+  };
 
   // Open assign dialog
   const handleOpenAssign = (day: 'Senin' | 'Selasa' | 'Rabu' | 'Kamis' | 'Jumat', slotId: string) => {
@@ -64,27 +84,29 @@ export const ScheduleModule: React.FC = () => {
     const existing = schedules.find(s => s.classId === selectedClassId && s.day === day && s.slotId === slotId);
     if (existing) {
       setSelectedSubjectId(existing.subjectId);
-      setSelectedTeacherId(existing.teacherId);
+      setSelectedTeacherId(existing.teacherId || getSubjectAssignedTeacherId(existing.subjectId));
     } else {
-      const defaultSubj = classSubjects[0];
-      setSelectedSubjectId(defaultSubj?.id || '');
-      setSelectedTeacherId(defaultSubj?.teacherId || teachers[0]?.id || '');
+      setSelectedSubjectId('');
+      setSelectedTeacherId('');
     }
     setAssignModal({ open: true, day, slotId, existingEntry: existing });
   };
 
-  // When subject changes in modal, auto-suggest the teacher mapped to that subject
+  // When subject changes in modal, automatically display and select the teacher mapped in Settings
   const handleSubjectChange = (subjectId: string) => {
     setSelectedSubjectId(subjectId);
-    const sub = subjects.find(s => s.id === subjectId);
-    if (sub && sub.teacherId) {
-      setSelectedTeacherId(sub.teacherId);
+    const assignedTeacherId = getSubjectAssignedTeacherId(subjectId);
+    if (assignedTeacherId) {
+      setSelectedTeacherId(assignedTeacherId);
+    } else {
+      setSelectedTeacherId('');
     }
   };
 
   const handleSaveAssign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignModal.day || !assignModal.slotId) return;
+    if (!selectedSubjectId || !selectedTeacherId) return;
 
     await saveScheduleEntry({
       id: assignModal.existingEntry?.id,
@@ -275,7 +297,7 @@ export const ScheduleModule: React.FC = () => {
                         s => s.classId === selectedClassId && s.day === day && s.slotId === slot.id
                       );
                       const subj = subjects.find(s => s.id === entry?.subjectId);
-                      const teacher = teachers.find(t => t.id === entry?.teacherId);
+                      const teacher = teachers.find(t => t.id === entry?.teacherId) || (subj?.teacherId ? teachers.find(t => t.id === subj.teacherId) : undefined);
 
                       return (
                         <td
@@ -342,11 +364,11 @@ export const ScheduleModule: React.FC = () => {
                 <select
                   value={selectedSubjectId}
                   onChange={(e) => handleSubjectChange(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-medium text-slate-800"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
                   required
                 >
                   <option value="" disabled>Pilih Mata Pelajaran...</option>
-                  {classSubjects.map(s => (
+                  {availableSubjects.map(s => (
                     <option key={s.id} value={s.id}>
                       {s.name} ({s.code})
                     </option>
@@ -359,14 +381,55 @@ export const ScheduleModule: React.FC = () => {
                 <select
                   value={selectedTeacherId}
                   onChange={(e) => setSelectedTeacherId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-medium text-slate-800"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
                   required
                 >
+                  <option value="" disabled>Pilih Guru Pengampu...</option>
                   {teachers.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
-                <p className="text-[11px] text-slate-500 mt-1">Otomatis terisi guru pengampu mapel, atau bisa dipilih guru lain.</p>
+
+                {(() => {
+                  const currentSub = subjects.find(s => s.id === selectedSubjectId);
+                  const matchedTeacher = teachers.find(t => t.id === selectedTeacherId);
+                  const configuredTeacherId = currentSub ? getSubjectAssignedTeacherId(currentSub.id) : '';
+
+                  if (currentSub && matchedTeacher) {
+                    const isConfigured = matchedTeacher.id === configuredTeacherId;
+                    return (
+                      <div className={`mt-2 p-2 rounded-lg text-xs flex items-center gap-2 border ${
+                        isConfigured 
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-medium'
+                          : 'bg-blue-50 border-blue-200 text-blue-800'
+                      }`}>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>
+                          {isConfigured ? (
+                            <>Otomatis terisi: <strong>{matchedTeacher.name}</strong> (sesuai Pengaturan &gt; Mata Pelajaran &amp; Pengampu)</>
+                          ) : (
+                            <>Guru pengampu dipilih manual: <strong>{matchedTeacher.name}</strong></>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  if (selectedSubjectId && !selectedTeacherId) {
+                    return (
+                      <div className="mt-2 p-2 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-lg flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>Mata pelajaran ini belum memiliki guru pengampu di menu Pengaturan. Silakan pilih guru di atas.</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Nama guru pengampu akan terisi secara otomatis sesuai pengaturan mata pelajaran saat mapel dipilih.
+                    </p>
+                  );
+                })()}
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-slate-200">
