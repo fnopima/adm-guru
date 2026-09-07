@@ -64,9 +64,11 @@ export const GradingModule: React.FC = () => {
     topic: 'Bab 1',
   });
 
-  // Subjects in selected class
+  // Subjects in selected class sorted ascending
   const classSubjects = useMemo(() => {
-    return subjects.filter(s => s.classId === selectedClassId);
+    return subjects
+      .filter(s => s.classId === selectedClassId)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
   }, [subjects, selectedClassId]);
 
   // Set default subject if not selected or invalid
@@ -78,7 +80,9 @@ export const GradingModule: React.FC = () => {
 
   const currentClass = classes.find(c => c.id === selectedClassId);
   const currentSubject = subjects.find(s => s.id === selectedSubjectId);
+  const isTimAsatidzah = currentSubject?.teacherId === 'TIM_ASATIDZAH';
   const subjectTeacher = teachers.find(t => t.id === currentSubject?.teacherId);
+  const teacherDisplayName = isTimAsatidzah ? 'Tim Asatidzah' : (subjectTeacher?.name || 'Belum Ditentukan');
   const classStudents = useMemo(() => {
     return students
       .filter(s => s.classId === selectedClassId)
@@ -435,12 +439,12 @@ export const GradingModule: React.FC = () => {
             {canEdit ? (
               <span className="text-blue-700 font-semibold flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                Izin pengeditan aktif untuk mapel ini (Guru Pengampu: {subjectTeacher?.name})
+                Izin pengeditan aktif untuk mapel ini (Guru Pengampu: {teacherDisplayName})
               </span>
             ) : (
               <span className="text-amber-700 font-semibold flex items-center gap-1">
                 <Lock className="w-4 h-4 text-amber-600" />
-                Mode Lihat (Pengeditan hanya untuk Guru Pengampu: <strong>{subjectTeacher?.name || '-'}</strong> atau Admin)
+                Mode Lihat (Pengeditan hanya untuk Guru Pengampu: <strong>{teacherDisplayName}</strong> atau Admin)
               </span>
             )}
           </div>
@@ -738,9 +742,9 @@ export const GradingModule: React.FC = () => {
         classNameLabel={currentClass?.name}
         orientation="landscape"
         signatureType="teacher"
-        teacherName={subjectTeacher?.name || currentUser.name}
+        teacherName={isTimAsatidzah ? 'Tim Asatidzah' : (subjectTeacher?.name || currentUser.name)}
         extraMeta={[
-          { label: 'Guru Pengampu', value: subjectTeacher?.name || '-' },
+          { label: 'Guru Pengampu', value: teacherDisplayName },
           { label: 'Semester / TP', value: `Semester ${schoolSettings.semester} TP ${schoolSettings.academicYear}` },
         ]}
       >

@@ -75,13 +75,16 @@ export const JournalModule: React.FC = () => {
 
   const currentClass = classes.find(c => c.id === selectedClassId);
   const classSubjects = useMemo(() => {
-    return subjects.filter(s => s.classId === selectedClassId);
+    return subjects
+      .filter(s => s.classId === selectedClassId)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
   }, [subjects, selectedClassId]);
 
   // Open modal for new journal
   const handleOpenNew = () => {
     const defaultSubj = classSubjects[0];
-    const defaultTeacher = teachers.find(t => t.id === defaultSubj?.teacherId) || teachers[0];
+    const isTim = defaultSubj?.teacherId === 'TIM_ASATIDZAH';
+    const defaultTeacher = isTim ? null : teachers.find(t => t.id === defaultSubj?.teacherId);
 
     const todayDate = new Date().toISOString().split('T')[0];
     const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -94,8 +97,8 @@ export const JournalModule: React.FC = () => {
       period: 'Jam ke 1 - 2 (07:15 - 08:25)',
       subjectId: defaultSubj?.id || '',
       subjectName: defaultSubj?.name || '',
-      teacherId: defaultTeacher?.id || '',
-      teacherName: defaultTeacher?.name || currentUser.name,
+      teacherId: isTim ? 'TIM_ASATIDZAH' : (defaultTeacher?.id || ''),
+      teacherName: isTim ? 'Tim Asatidzah' : (defaultTeacher?.name || currentUser.name),
       materialSummary: '',
       nextMeetingNotes: '',
       specialIncidents: '',
@@ -107,13 +110,14 @@ export const JournalModule: React.FC = () => {
   const handleSubjectChange = (subjId: string) => {
     const subj = subjects.find(s => s.id === subjId);
     if (subj) {
-      const teacher = teachers.find(t => t.id === subj.teacherId);
+      const isTim = subj.teacherId === 'TIM_ASATIDZAH';
+      const teacher = isTim ? null : teachers.find(t => t.id === subj.teacherId);
       setFormData(prev => ({
         ...prev,
         subjectId: subj.id,
         subjectName: subj.name,
-        teacherId: teacher?.id || prev.teacherId,
-        teacherName: teacher?.name || prev.teacherName,
+        teacherId: isTim ? 'TIM_ASATIDZAH' : (teacher?.id || prev.teacherId),
+        teacherName: isTim ? 'Tim Asatidzah' : (teacher?.name || prev.teacherName),
       }));
     }
   };
@@ -464,9 +468,12 @@ export const JournalModule: React.FC = () => {
                     required
                   >
                     <option value="" disabled>Pilih Mata Pelajaran...</option>
-                    {subjects.filter(s => s.classId === formData.classId).map(s => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
-                    ))}
+                    {subjects
+                      .filter(s => s.classId === formData.classId)
+                      .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }))
+                      .map(s => (
+                        <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
+                      ))}
                   </select>
                 </div>
 

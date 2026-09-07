@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -55,9 +55,22 @@ export const ScheduleModule: React.FC = () => {
   const homeroomTeacher = teachers.find(t => t.id === currentClass?.homeroomTeacherId);
   const canEdit = canEditSchedule(selectedClassId);
 
-  // Filter subjects for current class (fallback to all subjects if none configured specifically)
-  const classSubjects = subjects.filter(s => s.classId === selectedClassId);
-  const availableSubjects = classSubjects.length > 0 ? classSubjects : subjects;
+  // Sorted teachers ascending
+  const sortedTeachers = useMemo(() => {
+    return [...teachers].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
+  }, [teachers]);
+
+  // Filter subjects for current class (fallback to all subjects if none configured specifically), sorted ascending
+  const classSubjects = useMemo(() => {
+    return subjects
+      .filter(s => s.classId === selectedClassId)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
+  }, [subjects, selectedClassId]);
+
+  const availableSubjects = useMemo(() => {
+    const list = classSubjects.length > 0 ? classSubjects : subjects;
+    return [...list].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
+  }, [classSubjects, subjects]);
 
   // Helper to find the assigned teacher for a subject from Settings (Pengaturan > Mata Pelajaran dan Pengampu)
   const getSubjectAssignedTeacherId = (subjectId: string): string => {
@@ -84,7 +97,7 @@ export const ScheduleModule: React.FC = () => {
     const existing = schedules.find(s => s.classId === selectedClassId && s.day === day && s.slotId === slotId);
     if (existing) {
       setSelectedSubjectId(existing.subjectId);
-      setSelectedTeacherId(existing.teacherId || getSubjectAssignedTeacherId(existing.subjectId));
+      setSelectedTeacherId(existing.teacherId !== undefined ? existing.teacherId : getSubjectAssignedTeacherId(existing.subjectId));
     } else {
       setSelectedSubjectId('');
       setSelectedTeacherId('');
@@ -96,17 +109,13 @@ export const ScheduleModule: React.FC = () => {
   const handleSubjectChange = (subjectId: string) => {
     setSelectedSubjectId(subjectId);
     const assignedTeacherId = getSubjectAssignedTeacherId(subjectId);
-    if (assignedTeacherId) {
-      setSelectedTeacherId(assignedTeacherId);
-    } else {
-      setSelectedTeacherId('');
-    }
+    setSelectedTeacherId(assignedTeacherId || '');
   };
 
   const handleSaveAssign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignModal.day || !assignModal.slotId) return;
-    if (!selectedSubjectId || !selectedTeacherId) return;
+    if (!selectedSubjectId) return;
 
     await saveScheduleEntry({
       id: assignModal.existingEntry?.id,
@@ -114,7 +123,7 @@ export const ScheduleModule: React.FC = () => {
       day: assignModal.day,
       slotId: assignModal.slotId,
       subjectId: selectedSubjectId,
-      teacherId: selectedTeacherId,
+      teacherId: selectedTeacherId || '',
     });
     setAssignModal({ open: false });
   };
@@ -297,7 +306,9 @@ export const ScheduleModule: React.FC = () => {
                         s => s.classId === selectedClassId && s.day === day && s.slotId === slot.id
                       );
                       const subj = subjects.find(s => s.id === entry?.subjectId);
-                      const teacher = teachers.find(t => t.id === entry?.teacherId) || (subj?.teacherId ? teachers.find(t => t.id === subj.teacherId) : undefined);
+                      const effectiveTeacherId = entry?.teacherId !== undefined ? entry.teacherId : (subj?.teacherId || '');
+                      const teacher = teachers.find(t => t.id === effectiveTeacherId);
+                      const isTimAsatidzah = effectiveTeacherId === 'TIM_ASATIDZAH';
 
                       return (
                         <td
@@ -320,8 +331,17 @@ export const ScheduleModule: React.FC = () => {
                               <p className="font-bold text-slate-900 text-xs leading-tight">
                                 {subj.name}
                               </p>
-                              <p className="text-[11px] text-slate-600 truncate" title={teacher?.name}>
-                                {teacher ? teacher.name : 'Guru Pengampu'}
+                              <p
+                                className={`text-[11px] truncate ${
+                                  isTimAsatidzah
+                                    ? 'text-indigo-700 font-semibold'
+                                    : teacher
+                                    ? 'text-slate-600'
+                                    : 'text-amber-700 italic'
+                                }`}
+                                title={teacher ? teacher.name : isTimAsatidzah ? 'Tim Asatidzah' : 'Belum Ditentukan'}
+                              >
+                                {teacher ? teacher.name : isTimAsatidzah ? 'Tim Asatidzah' : 'Belum Ditentukan'}
                               </p>
                             </div>
                           ) : (
@@ -382,10 +402,10 @@ export const ScheduleModule: React.FC = () => {
                   value={selectedTeacherId}
                   onChange={(e) => setSelectedTeacherId(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
-                  required
                 >
-                  <option value="" disabled>Pilih Guru Pengampu...</option>
-                  {teachers.map(t => (
+                  <option value="">-- Belum Ditentukan --</option>
+                  <option value="TIM_ASATIDZAH">Tim Asatidzah</option>
+                  {sortedTeachers.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
@@ -394,6 +414,22 @@ export const ScheduleModule: React.FC = () => {
                   const currentSub = subjects.find(s => s.id === selectedSubjectId);
                   const matchedTeacher = teachers.find(t => t.id === selectedTeacherId);
                   const configuredTeacherId = currentSub ? getSubjectAssignedTeacherId(currentSub.id) : '';
+
+                  if (selectedTeacherId === 'TIM_ASATIDZAH') {
+                    const isConfigured = configuredTeacherId === 'TIM_ASATIDZAH';
+                    return (
+                      <div className="mt-2 p-2 rounded-lg text-xs flex items-center gap-2 border bg-indigo-50 border-indigo-200 text-indigo-800 font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <span>
+                          {isConfigured ? (
+                            <>Otomatis terisi: <strong>Tim Asatidzah</strong> (sesuai Pengaturan &gt; Mata Pelajaran &amp; Pengampu)</>
+                          ) : (
+                            <>Guru pengampu dipilih: <strong>Tim Asatidzah</strong></>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  }
 
                   if (currentSub && matchedTeacher) {
                     const isConfigured = matchedTeacher.id === configuredTeacherId;
@@ -416,10 +452,16 @@ export const ScheduleModule: React.FC = () => {
                   }
 
                   if (selectedSubjectId && !selectedTeacherId) {
+                    const isConfiguredUnassigned = !configuredTeacherId;
                     return (
                       <div className="mt-2 p-2 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-lg flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                        <span>Mata pelajaran ini belum memiliki guru pengampu di menu Pengaturan. Silakan pilih guru di atas.</span>
+                        <span>
+                          {isConfiguredUnassigned
+                            ? <>Otomatis terisi: <strong>Belum Ditentukan</strong> (sesuai Pengaturan). Boleh disimpan atau pilih guru di atas.</>
+                            : <>Guru pengampu diset: <strong>Belum Ditentukan</strong> (dapat diatur nanti atau saat jam pelajaran).</>
+                          }
+                        </span>
                       </div>
                     );
                   }
@@ -620,14 +662,19 @@ export const ScheduleModule: React.FC = () => {
                   {DAYS.map(day => {
                     const entry = schedules.find(s => s.classId === selectedClassId && s.day === day && s.slotId === slot.id);
                     const subj = subjects.find(s => s.id === entry?.subjectId);
-                    const teacher = teachers.find(t => t.id === entry?.teacherId);
+                    const effectiveTeacherId = entry?.teacherId !== undefined ? entry.teacherId : (subj?.teacherId || '');
+                    const teacher = teachers.find(t => t.id === effectiveTeacherId);
+                    const isTimAsatidzah = effectiveTeacherId === 'TIM_ASATIDZAH';
+                    const teacherDisplay = teacher ? teacher.name : isTimAsatidzah ? 'Tim Asatidzah' : 'Belum Ditentukan';
 
                     return (
                       <td key={day} className="py-1.5 px-2 border-r border-slate-900 last:border-r-0 align-top text-center">
                         {entry && subj ? (
                           <div>
                             <p className="font-bold text-slate-900 leading-tight">{subj.name}</p>
-                            <p className="text-[10px] text-slate-600 mt-0.5 italic">{teacher?.name}</p>
+                            <p className={`text-[10px] mt-0.5 ${isTimAsatidzah ? 'text-indigo-900 font-semibold' : !teacher ? 'text-amber-800 italic' : 'text-slate-600 italic'}`}>
+                              {teacherDisplay}
+                            </p>
                           </div>
                         ) : (
                           <span className="text-slate-300">-</span>

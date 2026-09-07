@@ -157,6 +157,20 @@ export const sortStudents = (studentsList: Student[]): Student[] => {
   });
 };
 
+// Helper to sort teachers by name (ascending)
+export const sortTeachers = (teachersList: Teacher[]): Teacher[] => {
+  return [...teachersList].sort((a, b) => {
+    return (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' });
+  });
+};
+
+// Helper to sort subjects by name (ascending)
+export const sortSubjects = (subjectsList: Subject[]): Subject[] => {
+  return [...subjectsList].sort((a, b) => {
+    return (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' });
+  });
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Current user session (default: admin logged in for easy initial testing, or saved session)
   const [currentUser, setCurrentUser] = useState<UserSession>(() => {
@@ -178,10 +192,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [schoolSettings, setSchoolSettings] = useState<SchoolSettings>(initialSchoolSettings);
-  const [teachers, setTeachers] = useState<Teacher[]>(initialTeachers);
+  const [teachers, setTeachers] = useState<Teacher[]>(sortTeachers(initialTeachers));
   const [classes, setClasses] = useState<ClassRoom[]>(sortClasses(initialClasses));
   const [students, setStudents] = useState<Student[]>(sortStudents(initialStudents));
-  const [subjects, setSubjects] = useState<Subject[]>(initialSubjects);
+  const [subjects, setSubjects] = useState<Subject[]>(sortSubjects(initialSubjects));
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
   const [schedules, setSchedules] = useState<ScheduleEntry[]>(initialScheduleEntries);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(generateSampleAttendance());
@@ -245,7 +259,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               }
               list.push({ id: d.id, ...data } as Teacher);
             });
-            setTeachers(list);
+            setTeachers(sortTeachers(list));
           } else if (!databaseInitializedRef.current) {
             // Seed teachers only on initial empty db
             initialTeachers.forEach(t => {
@@ -253,6 +267,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               delete teacherData.username;
               safeSetDoc(doc(db, 'teachers', t.id), teacherData).catch(console.error);
             });
+            setTeachers(sortTeachers(initialTeachers));
           } else {
             setTeachers([]);
           }
@@ -300,11 +315,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (!snap.empty) {
             const list: Subject[] = [];
             snap.forEach((d) => list.push({ id: d.id, ...d.data() } as Subject));
-            setSubjects(list);
+            setSubjects(sortSubjects(list));
           } else {
             initialSubjects.forEach(s => {
               safeSetDoc(doc(db, 'subjects', s.id), s).catch(console.error);
             });
+            setSubjects(sortSubjects(initialSubjects));
           }
         }, (err) => console.warn('Subjects sync err:', err));
 
@@ -527,11 +543,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return Boolean(cl && cl.homeroomTeacherId === currentUser.teacherId);
   }, [currentUser, classes]);
 
-  // Can edit grades: Admin or Teacher teaching that subject in that class
+  // Can edit grades: Admin or Teacher teaching that subject in that class (or any teacher if Tim Asatidzah)
   const canEditGrades = useCallback((subjectId: string, classId: string) => {
     if (currentUser.role === 'admin') return true;
     const subj = subjects.find(s => s.id === subjectId && s.classId === classId);
-    return Boolean(subj && subj.teacherId === currentUser.teacherId);
+    if (!subj) return false;
+    if (subj.teacherId === 'TIM_ASATIDZAH') return true;
+    return Boolean(subj.teacherId === currentUser.teacherId);
   }, [currentUser, subjects]);
 
   // Settings CRUD
@@ -555,7 +573,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newTeacher: Teacher = { ...teacher, id, password: teacher.password || 'annuur' };
     const teacherDataToSave: any = { ...newTeacher };
     delete teacherDataToSave.username;
-    setTeachers(prev => [...prev, newTeacher]);
+    setTeachers(prev => sortTeachers([...prev, newTeacher]));
     try {
       await safeSetDoc(doc(db, 'teachers', id), teacherDataToSave);
     } catch (e) {
@@ -570,7 +588,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSyncing(true);
     const updatedData: any = { ...updated };
     delete updatedData.username;
-    setTeachers(prev => prev.map(t => t.id === id ? { ...t, ...updatedData } : t));
+    setTeachers(prev => sortTeachers(prev.map(t => t.id === id ? { ...t, ...updatedData } : t)));
     try {
       await safeSetDoc(doc(db, 'teachers', id), updatedData, { merge: true });
     } catch (e) {
@@ -727,7 +745,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSyncing(true);
     const id = `subj-${Date.now()}`;
     const newSubj: Subject = { ...subject, id };
-    setSubjects(prev => [...prev, newSubj]);
+    setSubjects(prev => sortSubjects([...prev, newSubj]));
     try {
       await safeSetDoc(doc(db, 'subjects', id), newSubj);
     } catch (e) {
@@ -740,7 +758,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateSubject = async (id: string, updated: Partial<Subject>) => {
     setIsSyncing(true);
-    setSubjects(prev => prev.map(s => s.id === id ? { ...s, ...updated } : s));
+    setSubjects(prev => sortSubjects(prev.map(s => s.id === id ? { ...s, ...updated } : s)));
     try {
       await safeSetDoc(doc(db, 'subjects', id), updated, { merge: true });
     } catch (e) {

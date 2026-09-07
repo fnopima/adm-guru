@@ -500,10 +500,17 @@ export const SettingsModule: React.FC = () => {
     })
     .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { numeric: true, sensitivity: 'base' }));
 
-  // Filtered subjects
-  const filteredSubjects = subjects.filter(s => {
-    return selectedSubjectClassId === 'ALL' || s.classId === selectedSubjectClassId;
-  });
+  // Sorted teachers (ascending)
+  const sortedTeachers = useMemo(() => {
+    return [...teachers].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
+  }, [teachers]);
+
+  // Filtered subjects sorted by name ascending
+  const filteredSubjects = useMemo(() => {
+    return subjects
+      .filter(s => selectedSubjectClassId === 'ALL' || s.classId === selectedSubjectClassId)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
+  }, [subjects, selectedSubjectClassId]);
 
   // Sorted classes by grade (rendah ke tinggi), then name (ascending)
   const sortedClasses = useMemo(() => {
@@ -1021,7 +1028,7 @@ export const SettingsModule: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
-                {teachers.map((t, idx) => {
+                {sortedTeachers.map((t, idx) => {
                   const homeroomClass = classes.find(c => c.homeroomTeacherId === t.id);
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/80 transition">
@@ -1110,7 +1117,7 @@ export const SettingsModule: React.FC = () => {
                 className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-800 outline-hidden cursor-pointer"
               >
                 <option value="ALL">Semua Kelas ({subjects.length} Mapel)</option>
-                {classes.map(c => (
+                {sortedClasses.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
@@ -1168,6 +1175,10 @@ export const SettingsModule: React.FC = () => {
                         <td className="py-3 px-4">
                           {teacher ? (
                             <span className="font-semibold text-slate-800">{teacher.name}</span>
+                          ) : sub.teacherId === 'TIM_ASATIDZAH' ? (
+                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded font-semibold text-[10px]">
+                              Tim Asatidzah
+                            </span>
                           ) : (
                             <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded font-semibold text-[10px]">
                               Belum Ditentukan
@@ -1741,7 +1752,7 @@ export const SettingsModule: React.FC = () => {
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 outline-hidden focus:ring-1 focus:ring-blue-500 focus:bg-white cursor-pointer"
                 >
                   <option value="">-- Belum Ditentukan --</option>
-                  {teachers.map(t => (
+                  {sortedTeachers.map(t => (
                     <option key={t.id} value={t.id}>
                       {t.name}
                     </option>
@@ -1874,14 +1885,15 @@ export const SettingsModule: React.FC = () => {
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 outline-hidden focus:ring-1 focus:ring-blue-500 focus:bg-white cursor-pointer"
                 >
                   <option value="">-- Belum Ditentukan --</option>
-                  {teachers.map(t => (
+                  <option value="TIM_ASATIDZAH">Tim Asatidzah</option>
+                  {sortedTeachers.map(t => (
                     <option key={t.id} value={t.id}>
                       {t.name}
                     </option>
                   ))}
                 </select>
                 <p className="text-[11px] text-slate-500 mt-1">
-                  Pilih guru pengampu mata pelajaran, atau pilih "-- Belum Ditentukan --" jika belum ditetapkan.
+                  Pilih guru pengampu mata pelajaran, pilih &quot;Tim Asatidzah&quot; jika diajar secara tim/bersama, atau pilih &quot;-- Belum Ditentukan --&quot; jika belum ditetapkan.
                 </p>
               </div>
 

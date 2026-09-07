@@ -9,8 +9,9 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const { teachers, loginAs, currentUser } = useApp();
+  const sortedTeachers = [...teachers].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
   const [selectedRole, setSelectedRole] = useState<'admin' | 'guru'>('admin');
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(teachers[0]?.id || '');
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(sortedTeachers[0]?.id || '');
   const [password, setPassword] = useState<string>('annuur');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [successMsg, setSuccessMsg] = useState<string>('');
@@ -98,7 +99,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 id="btn-role-guru"
-                onClick={() => handleQuickSwitch('guru', teachers[0]?.id)}
+                onClick={() => handleQuickSwitch('guru', sortedTeachers[0]?.id)}
                 className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition cursor-pointer ${
                   selectedRole === 'guru'
                     ? 'bg-white text-emerald-800 shadow-xs border border-slate-200'
@@ -123,7 +124,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 id="select-teacher-login"
                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-hidden font-medium"
               >
-                {teachers.map((t) => (
+                {sortedTeachers.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name} {t.nip ? `(NIP: ${t.nip})` : ''}
                   </option>
