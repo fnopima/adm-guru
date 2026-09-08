@@ -404,7 +404,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               onClick={handlePrint}
               disabled={isExportingPdf || isPrinting}
               id="btn-trigger-print"
-              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition shadow-sm cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2 bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-bold rounded-lg flex items-center gap-2 transition shadow-sm cursor-pointer disabled:opacity-50"
             >
               {isPrinting ? (
                 <>
@@ -432,8 +432,8 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
         {/* Petunjuk Tambahan saat dalam lingkungan Iframe */}
         {isInsideIframe && (
-          <div className="no-print mx-6 mt-3 px-3.5 py-2 bg-blue-950/40 border border-blue-800/40 rounded-lg flex items-center gap-2 text-xs text-blue-200">
-            <Info className="w-4 h-4 text-blue-400 shrink-0" />
+          <div className="no-print mx-6 mt-3 px-3.5 py-2 bg-emerald-950/40 border border-emerald-800/40 rounded-lg flex items-center gap-2 text-xs text-emerald-200">
+            <Info className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
               <strong>Petunjuk Cetak:</strong> Klik <strong>Cetak Printer</strong> untuk mencetak langsung, atau gunakan <strong>Simpan / Unduh PDF</strong> jika jendela pratinjau membatasi dialog cetak.
             </span>

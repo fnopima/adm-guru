@@ -294,7 +294,7 @@ export const IncidentModule: React.FC = () => {
             <button
               onClick={handleOpenNew}
               id="btn-add-incident"
-              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition shadow-sm cursor-pointer"
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Catat Kejadian Murid
@@ -347,7 +347,7 @@ export const IncidentModule: React.FC = () => {
                 placeholder="Cari nama murid, uraian, penanganan, atau guru..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:bg-white"
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white"
               />
             </div>
           </div>
@@ -563,8 +563,8 @@ export const IncidentModule: React.FC = () => {
 
                 {/* Active Selected Students Tray */}
                 {formData.studentIds.length > 0 ? (
-                  <div className="p-2.5 bg-blue-50/70 border border-blue-200 rounded-xl mb-2.5">
-                    <div className="text-[11px] font-bold text-blue-900 mb-1.5 flex items-center justify-between">
+                  <div className="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-xl mb-2.5">
+                    <div className="text-[11px] font-bold text-emerald-900 mb-1.5 flex items-center justify-between">
                       <span>{formData.studentIds.length} Siswa Terpilih:</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
@@ -575,10 +575,10 @@ export const IncidentModule: React.FC = () => {
                         return (
                           <span
                             key={id}
-                            className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-white border border-blue-300 rounded-lg text-xs font-semibold text-slate-800 shadow-2xs"
+                            className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-white border border-emerald-300 rounded-lg text-xs font-semibold text-slate-800 shadow-2xs"
                           >
                             <span>{name}</span>
-                            <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded font-bold">
+                            <span className="text-[10px] px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">
                               {className}
                             </span>
                             <button
@@ -632,7 +632,7 @@ export const IncidentModule: React.FC = () => {
                       placeholder="Cari nama siswa atau NIS..."
                       value={studentSearch}
                       onChange={(e) => setStudentSearch(e.target.value)}
-                      className="w-full pl-8 pr-7 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 outline-hidden focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                      className="w-full pl-8 pr-7 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 outline-hidden focus:ring-1 focus:ring-emerald-500 focus:bg-white"
                     />
                     {studentSearch && (
                       <button
@@ -662,7 +662,7 @@ export const IncidentModule: React.FC = () => {
                             key={st.id}
                             className={`flex items-center justify-between p-2 rounded-lg border text-xs cursor-pointer transition select-none ${
                               checked
-                                ? 'bg-blue-50 border-blue-400 text-blue-900 font-semibold'
+                                ? 'bg-emerald-50 border-emerald-400 text-emerald-900 font-semibold'
                                 : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
                             }`}
                           >
@@ -671,7 +671,7 @@ export const IncidentModule: React.FC = () => {
                                 type="checkbox"
                                 checked={checked}
                                 onChange={() => handleToggleStudent(st.id, st.name)}
-                                className="rounded text-blue-600 focus:ring-blue-500 shrink-0 cursor-pointer"
+                                className="rounded text-emerald-600 focus:ring-emerald-500 shrink-0 cursor-pointer"
                               />
                               <div className="min-w-0">
                                 <div className="truncate font-semibold">{st.name}</div>
@@ -681,7 +681,7 @@ export const IncidentModule: React.FC = () => {
                               </div>
                             </div>
                             <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${
-                              checked ? 'bg-blue-200 text-blue-900' : 'bg-slate-100 text-slate-600'
+                              checked ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-100 text-slate-600'
                             }`}>
                               {clsName}
                             </span>
@@ -779,7 +779,7 @@ export const IncidentModule: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
                 >
                   Simpan Catatan Kejadian
                 </button>

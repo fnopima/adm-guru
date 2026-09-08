@@ -179,7 +179,7 @@ export const ScheduleModule: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-50 text-blue-700 rounded-xl">
+              <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
                 <Calendar className="w-5 h-5" />
               </div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">
@@ -215,9 +215,9 @@ export const ScheduleModule: React.FC = () => {
                   setShowTimeSlotModal(true);
                 }}
                 id="btn-manage-timeslots"
-                className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer border border-slate-200 shadow-2xs"
+                className="px-3 py-1.5 bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer border border-emerald-200 shadow-2xs"
               >
-                <Clock className="w-3.5 h-3.5 text-slate-500" />
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
                 Atur Durasi Waktu
               </button>
             )}
@@ -226,7 +226,7 @@ export const ScheduleModule: React.FC = () => {
             <button
               onClick={() => setShowPrintModal(true)}
               id="btn-print-schedule"
-              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition shadow-sm cursor-pointer"
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition shadow-sm cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               Cetak / Ekspor PDF
@@ -237,18 +237,18 @@ export const ScheduleModule: React.FC = () => {
         {/* Permission Indicator */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2 text-slate-600">
-            <span>Wali Kelas: <strong>{homeroomTeacher ? homeroomTeacher.name : '-'}</strong></span>
+            <span>Wali Kelas: <strong className="text-slate-900">{homeroomTeacher ? homeroomTeacher.name : '-'}</strong></span>
             <span>•</span>
             <span>Semester {schoolSettings.semester} TP {schoolSettings.academicYear}</span>
           </div>
 
           {canEdit ? (
-            <div className="flex items-center gap-1.5 text-blue-700 font-medium">
+            <div className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/60">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>Hak edit jadwal aktif (Klik pada sel jadwal untuk mengubah)</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 text-slate-500">
+            <div className="flex items-center gap-1.5 text-amber-800 font-medium bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200/60">
               <Lock className="w-4 h-4 text-amber-600" />
               <span>Mode Lihat (Hanya Wali Kelas <strong>{homeroomTeacher?.name}</strong> atau Admin yang dapat mengubah)</span>
             </div>
@@ -257,19 +257,19 @@ export const ScheduleModule: React.FC = () => {
       </div>
 
       {/* Main Schedule Matrix Table */}
-      <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xs border border-emerald-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                <th className="py-3.5 px-4 w-36 text-center border-r border-slate-700">
+              <tr className="bg-emerald-950 text-white text-xs uppercase tracking-wider">
+                <th className="py-3.5 px-4 w-36 text-center border-r border-emerald-900">
                   <div className="flex items-center justify-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
                     Waktu / Jam
                   </div>
                 </th>
                 {DAYS.map(day => (
-                  <th key={day} className="py-3.5 px-4 text-center border-r border-slate-700 last:border-r-0 min-w-[170px]">
+                  <th key={day} className="py-3.5 px-4 text-center border-r border-emerald-900 last:border-r-0 min-w-[170px]">
                     {day}
                   </th>
                 ))}
@@ -334,7 +334,7 @@ export const ScheduleModule: React.FC = () => {
                               <p
                                 className={`text-[11px] truncate ${
                                   isTimAsatidzah
-                                    ? 'text-indigo-700 font-semibold'
+                                    ? 'text-amber-900 font-bold bg-amber-100/90 px-1.5 py-0.5 rounded border border-amber-300 inline-block'
                                     : teacher
                                     ? 'text-slate-600'
                                     : 'text-amber-700 italic'
@@ -418,8 +418,8 @@ export const ScheduleModule: React.FC = () => {
                   if (selectedTeacherId === 'TIM_ASATIDZAH') {
                     const isConfigured = configuredTeacherId === 'TIM_ASATIDZAH';
                     return (
-                      <div className="mt-2 p-2 rounded-lg text-xs flex items-center gap-2 border bg-indigo-50 border-indigo-200 text-indigo-800 font-medium">
-                        <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <div className="mt-2 p-2 rounded-lg text-xs flex items-center gap-2 border bg-amber-50 border-amber-300 text-amber-900 font-bold">
+                        <CheckCircle2 className="w-4 h-4 text-amber-700 shrink-0" />
                         <span>
                           {isConfigured ? (
                             <>Otomatis terisi: <strong>Tim Asatidzah</strong> (sesuai Pengaturan &gt; Mata Pelajaran &amp; Pengampu)</>
@@ -437,7 +437,7 @@ export const ScheduleModule: React.FC = () => {
                       <div className={`mt-2 p-2 rounded-lg text-xs flex items-center gap-2 border ${
                         isConfigured 
                           ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-medium'
-                          : 'bg-blue-50 border-blue-200 text-blue-800'
+                          : 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
                       }`}>
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                         <span>
@@ -511,12 +511,12 @@ export const ScheduleModule: React.FC = () => {
       {showTimeSlotModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+            <div className="bg-emerald-950 text-white p-5 flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-base">Pengaturan Durasi Waktu Pelajaran</h3>
-                <p className="text-xs text-slate-400">Atur jam mulai, jam selesai, dan label setiap jam pelajaran</p>
+                <p className="text-xs text-emerald-200">Atur jam mulai, jam selesai, dan label setiap jam pelajaran</p>
               </div>
-              <button onClick={() => setShowTimeSlotModal(false)} className="text-slate-400 hover:text-white">✕</button>
+              <button onClick={() => setShowTimeSlotModal(false)} className="text-emerald-300 hover:text-white cursor-pointer">✕</button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-3 flex-1 text-xs">
@@ -586,14 +586,14 @@ export const ScheduleModule: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleAddTimeSlot}
-                  className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-semibold hover:bg-blue-100 transition"
+                  className="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition cursor-pointer"
                 >
                   + Tambah Jam Pelajaran
                 </button>
                 <button
                   type="button"
                   onClick={handleAddBreakSlot}
-                  className="px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-xs font-semibold hover:bg-amber-100 transition"
+                  className="px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-300 rounded-lg text-xs font-semibold hover:bg-amber-100 transition cursor-pointer"
                 >
                   + Tambah Jam Istirahat
                 </button>
@@ -603,13 +603,13 @@ export const ScheduleModule: React.FC = () => {
             <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2">
               <button
                 onClick={() => setShowTimeSlotModal(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition"
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition cursor-pointer"
               >
                 Batal
               </button>
               <button
                 onClick={handleSaveSlots}
-                className="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition"
+                className="px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm transition cursor-pointer"
               >
                 Simpan Waktu Pelajaran
               </button>
@@ -672,7 +672,7 @@ export const ScheduleModule: React.FC = () => {
                         {entry && subj ? (
                           <div>
                             <p className="font-bold text-slate-900 leading-tight">{subj.name}</p>
-                            <p className={`text-[10px] mt-0.5 ${isTimAsatidzah ? 'text-indigo-900 font-semibold' : !teacher ? 'text-amber-800 italic' : 'text-slate-600 italic'}`}>
+                            <p className={`text-[10px] mt-0.5 ${isTimAsatidzah ? 'text-amber-900 font-bold' : !teacher ? 'text-amber-800 italic' : 'text-slate-600 italic'}`}>
                               {teacherDisplay}
                             </p>
                           </div>

@@ -57,20 +57,20 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="bg-slate-900 text-white p-6 relative">
+        <div className="bg-emerald-950 text-white p-6 relative border-b border-emerald-900">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+            className="absolute top-4 right-4 text-emerald-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-amber-400 text-emerald-950 flex items-center justify-center font-bold">
               <KeyRound className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold">Ubah Password Pribadi</h2>
-              <p className="text-xs text-slate-400">Akun: {currentUser.name} ({currentUser.role})</p>
+              <p className="text-xs text-emerald-200">Akun: <strong className="text-amber-300">{currentUser.name}</strong> ({currentUser.role})</p>
             </div>
           </div>
         </div>

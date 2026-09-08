@@ -529,7 +529,7 @@ export const SettingsModule: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           <div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Building className="w-5 h-5 text-blue-600" />
+              <Building className="w-5 h-5 text-emerald-600" />
               Pengaturan & Data Master Sekolah
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -564,14 +564,14 @@ export const SettingsModule: React.FC = () => {
             id="tab-students"
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
               activeTab === 'students'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
             }`}
           >
             <GraduationCap className="w-4 h-4" />
             Data Siswa & Import/Export
             <span className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-              activeTab === 'students' ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-700'
+              activeTab === 'students' ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
               {students.length}
             </span>
@@ -582,14 +582,14 @@ export const SettingsModule: React.FC = () => {
             id="tab-classes"
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
               activeTab === 'classes'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
             }`}
           >
             <Layers className="w-4 h-4" />
             Rombongan Belajar (Kelas)
             <span className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-              activeTab === 'classes' ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-700'
+              activeTab === 'classes' ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
               {classes.length}
             </span>
@@ -600,14 +600,14 @@ export const SettingsModule: React.FC = () => {
             id="tab-teachers"
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
               activeTab === 'teachers'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
             }`}
           >
             <Users className="w-4 h-4" />
             Dewan Guru
             <span className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-              activeTab === 'teachers' ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-700'
+              activeTab === 'teachers' ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
               {teachers.length}
             </span>
@@ -618,14 +618,14 @@ export const SettingsModule: React.FC = () => {
             id="tab-subjects"
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
               activeTab === 'subjects'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
             }`}
           >
             <BookOpen className="w-4 h-4" />
             Mata Pelajaran & Pengampu
             <span className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-              activeTab === 'subjects' ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-700'
+              activeTab === 'subjects' ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
               {subjects.length}
             </span>
@@ -636,7 +636,7 @@ export const SettingsModule: React.FC = () => {
             id="tab-school"
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
               activeTab === 'school'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
             }`}
           >
@@ -680,7 +680,7 @@ export const SettingsModule: React.FC = () => {
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
                   id="search-student-input"
-                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:bg-white"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white"
                 />
               </div>
             </div>
@@ -710,9 +710,9 @@ export const SettingsModule: React.FC = () => {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   id="btn-upload-excel-students"
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                 >
-                  <Upload className="w-3.5 h-3.5 text-blue-600" />
+                  <Upload className="w-3.5 h-3.5 text-emerald-700" />
                   Import Excel / CSV
                 </button>
               )}
@@ -742,7 +742,7 @@ export const SettingsModule: React.FC = () => {
                     setStudentModal({ open: true });
                   }}
                   id="btn-add-student"
-                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Tambah Siswa
@@ -784,8 +784,8 @@ export const SettingsModule: React.FC = () => {
                           {s.nis || '-'} <span className="text-slate-300">/</span> {s.nisn || '-'}
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            s.gender === 'L' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700'
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                            s.gender === 'L' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-pink-50 text-pink-700 border-pink-200'
                           }`}>
                             {s.gender === 'L' ? 'L' : 'P'}
                           </span>
@@ -878,7 +878,7 @@ export const SettingsModule: React.FC = () => {
                   setClassModal({ open: true });
                 }}
                 id="btn-add-class"
-                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Tambah Rombel
@@ -896,7 +896,7 @@ export const SettingsModule: React.FC = () => {
                 <div key={cls.id} className="p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition bg-slate-50/50 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-800 rounded font-bold text-[10px] uppercase">
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded font-bold text-[10px] uppercase">
                         Tingkat {cls.grade}
                       </span>
                       <h4 className="text-base font-bold text-slate-900 mt-1">{cls.name}</h4>
@@ -913,7 +913,7 @@ export const SettingsModule: React.FC = () => {
                             });
                             setClassModal({ open: true, editId: cls.id });
                           }}
-                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition cursor-pointer"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
@@ -1006,7 +1006,7 @@ export const SettingsModule: React.FC = () => {
                   setTeacherModal({ open: true });
                 }}
                 id="btn-add-teacher"
-                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Tambah Guru
@@ -1064,7 +1064,7 @@ export const SettingsModule: React.FC = () => {
                                 });
                                 setTeacherModal({ open: true, editId: t.id });
                               }}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition cursor-pointer"
                             >
                               <Edit className="w-3.5 h-3.5" />
                             </button>
@@ -1135,7 +1135,7 @@ export const SettingsModule: React.FC = () => {
                   setSubjectModal({ open: true });
                 }}
                 id="btn-add-subject"
-                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Tambah Mata Pelajaran
@@ -1176,7 +1176,7 @@ export const SettingsModule: React.FC = () => {
                           {teacher ? (
                             <span className="font-semibold text-slate-800">{teacher.name}</span>
                           ) : sub.teacherId === 'TIM_ASATIDZAH' ? (
-                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded font-semibold text-[10px]">
+                            <span className="px-2 py-0.5 bg-amber-50 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">
                               Tim Asatidzah
                             </span>
                           ) : (
@@ -1198,7 +1198,7 @@ export const SettingsModule: React.FC = () => {
                                   });
                                   setSubjectModal({ open: true, editId: sub.id });
                                 }}
-                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer"
+                                className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition cursor-pointer"
                               >
                                 <Edit className="w-3.5 h-3.5" />
                               </button>
@@ -1299,7 +1299,7 @@ export const SettingsModule: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => logoInputRef.current?.click()}
-                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                       >
                         <Upload className="w-3.5 h-3.5" />
                         {schoolForm.logo ? 'Ganti File Gambar Logo' : 'Pilih File Gambar Logo'}
@@ -1456,7 +1456,7 @@ export const SettingsModule: React.FC = () => {
               <button
                 type="submit"
                 id="btn-save-school-settings"
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition shadow-sm flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg transition shadow-sm flex items-center gap-2 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
                 Simpan Perubahan Identitas Sekolah
@@ -1470,11 +1470,11 @@ export const SettingsModule: React.FC = () => {
       {studentModal.open && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between shrink-0">
+            <div className="bg-emerald-950 text-white p-5 flex items-center justify-between shrink-0">
               <h3 className="font-bold text-sm">
                 {studentModal.editId ? 'Edit Data Siswa' : 'Tambah Siswa Baru'}
               </h3>
-              <button onClick={() => setStudentModal({ open: false })} className="text-slate-400 hover:text-white cursor-pointer">✕</button>
+              <button onClick={() => setStudentModal({ open: false })} className="text-emerald-300 hover:text-white cursor-pointer">✕</button>
             </div>
             <form onSubmit={handleSaveStudent} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="p-6 space-y-3.5 text-xs overflow-y-auto flex-1">
@@ -1591,7 +1591,7 @@ export const SettingsModule: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
                 >
                   Simpan Data Siswa
                 </button>
@@ -1605,11 +1605,11 @@ export const SettingsModule: React.FC = () => {
       {teacherModal.open && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between shrink-0">
+            <div className="bg-emerald-950 text-white p-5 flex items-center justify-between shrink-0">
               <h3 className="font-bold text-sm">
                 {teacherModal.editId ? 'Edit Data Guru' : 'Tambah Guru Baru'}
               </h3>
-              <button onClick={() => setTeacherModal({ open: false })} className="text-slate-400 hover:text-white cursor-pointer">✕</button>
+              <button onClick={() => setTeacherModal({ open: false })} className="text-emerald-300 hover:text-white cursor-pointer">✕</button>
             </div>
             <form onSubmit={handleSaveTeacher} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="p-6 space-y-3.5 text-xs overflow-y-auto flex-1">
@@ -1696,7 +1696,7 @@ export const SettingsModule: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
                 >
                   Simpan Data Guru
                 </button>
@@ -1710,11 +1710,11 @@ export const SettingsModule: React.FC = () => {
       {classModal.open && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+            <div className="bg-emerald-950 text-white p-5 flex items-center justify-between">
               <h3 className="font-bold text-sm">
                 {classModal.editId ? 'Edit Rombel' : 'Tambah Rombel Baru'}
               </h3>
-              <button onClick={() => setClassModal({ open: false })} className="text-slate-400 hover:text-white cursor-pointer">✕</button>
+              <button onClick={() => setClassModal({ open: false })} className="text-emerald-300 hover:text-white cursor-pointer">✕</button>
             </div>
             <form onSubmit={handleSaveClass} className="p-6 space-y-3.5 text-xs">
               <div>
@@ -1749,7 +1749,7 @@ export const SettingsModule: React.FC = () => {
                 <select
                   value={classForm.homeroomTeacherId}
                   onChange={(e) => setClassForm({ ...classForm, homeroomTeacherId: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 outline-hidden focus:ring-1 focus:ring-blue-500 focus:bg-white cursor-pointer"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 outline-hidden focus:ring-1 focus:ring-emerald-500 focus:bg-white cursor-pointer"
                 >
                   <option value="">-- Belum Ditentukan --</option>
                   {sortedTeachers.map(t => (
@@ -1815,7 +1815,7 @@ export const SettingsModule: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
                   >
                     Simpan Rombel
                   </button>
@@ -1830,11 +1830,11 @@ export const SettingsModule: React.FC = () => {
       {subjectModal.open && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+            <div className="bg-emerald-950 text-white p-5 flex items-center justify-between">
               <h3 className="font-bold text-sm">
                 {subjectModal.editId ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran'}
               </h3>
-              <button onClick={() => setSubjectModal({ open: false })} className="text-slate-400 hover:text-white cursor-pointer">✕</button>
+              <button onClick={() => setSubjectModal({ open: false })} className="text-emerald-300 hover:text-white cursor-pointer">✕</button>
             </div>
             <form onSubmit={handleSaveSubject} className="p-6 space-y-3.5 text-xs">
               <div>
@@ -1882,7 +1882,7 @@ export const SettingsModule: React.FC = () => {
                 <select
                   value={subjectForm.teacherId}
                   onChange={(e) => setSubjectForm({ ...subjectForm, teacherId: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 outline-hidden focus:ring-1 focus:ring-blue-500 focus:bg-white cursor-pointer"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 outline-hidden focus:ring-1 focus:ring-emerald-500 focus:bg-white cursor-pointer"
                 >
                   <option value="">-- Belum Ditentukan --</option>
                   <option value="TIM_ASATIDZAH">Tim Asatidzah</option>
@@ -1907,7 +1907,7 @@ export const SettingsModule: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
                 >
                   Simpan Mapel
                 </button>
@@ -1921,12 +1921,12 @@ export const SettingsModule: React.FC = () => {
       {importModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+            <div className="bg-emerald-950 text-white p-5 flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-base">Konfirmasi Import Data Siswa Massal</h3>
-                <p className="text-xs text-slate-400">Ditemukan {importData.length} data siswa dari file</p>
+                <p className="text-xs text-emerald-300">Ditemukan {importData.length} data siswa dari file</p>
               </div>
-              <button onClick={() => setImportModal(false)} className="text-slate-400 hover:text-white cursor-pointer">✕</button>
+              <button onClick={() => setImportModal(false)} className="text-emerald-300 hover:text-white cursor-pointer">✕</button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-4">
@@ -1985,7 +1985,7 @@ export const SettingsModule: React.FC = () => {
                 <button
                   onClick={handleConfirmImport}
                   disabled={importLoading}
-                  className="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" />
                   {importLoading ? 'Menyimpan ke Cloud...' : `Simpan ${importData.length} Siswa`}

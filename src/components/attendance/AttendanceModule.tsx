@@ -216,11 +216,11 @@ export const AttendanceModule: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           <div>
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-50 text-blue-700 rounded-xl">
+              <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
                 <UserCheck className="w-5 h-5" />
               </div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                Presensi Siswa Harian & Rekap Bulanan
+                Presensi Siswa Harian &amp; Rekap Bulanan
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -235,7 +235,7 @@ export const AttendanceModule: React.FC = () => {
               id="btn-mode-daily"
               className={`px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
                 viewMode === 'daily'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -246,7 +246,7 @@ export const AttendanceModule: React.FC = () => {
               id="btn-mode-monthly"
               className={`px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
                 viewMode === 'monthly'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -335,10 +335,10 @@ export const AttendanceModule: React.FC = () => {
                   type="button"
                   onClick={handleSetAllPresent}
                   id="btn-set-all-present"
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                   title="Isi otomatis seluruh siswa dengan status Hadir (H)"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                   Set Semua Hadir (H)
                 </button>
 
@@ -347,7 +347,7 @@ export const AttendanceModule: React.FC = () => {
                   onClick={handleSaveDaily}
                   disabled={isSaving}
                   id="btn-save-attendance"
-                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer disabled:opacity-50"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer disabled:opacity-50"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {isSaving ? 'Menyimpan...' : 'Simpan Presensi'}
@@ -358,7 +358,7 @@ export const AttendanceModule: React.FC = () => {
                 type="button"
                 onClick={() => setShowPrintModal(true)}
                 id="btn-print-attendance-recap"
-                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5" />
                 Cetak Rekap Bulanan PDF
@@ -403,7 +403,7 @@ export const AttendanceModule: React.FC = () => {
               <button 
                 type="button"
                 onClick={handleSetAllPresent}
-                className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+                className="text-xs font-semibold text-emerald-700 hover:underline cursor-pointer"
               >
                 Set Semua Hadir (H)
               </button>
@@ -446,9 +446,9 @@ export const AttendanceModule: React.FC = () => {
                               {(['H', 'S', 'I', 'A'] as AttendanceStatus[]).map((statusKey) => {
                                 const isSelected = cur.status === statusKey;
                                 let activeClass = '';
-                                if (statusKey === 'H') activeClass = 'bg-emerald-500 text-white font-bold shadow-xs';
+                                if (statusKey === 'H') activeClass = 'bg-emerald-600 text-white font-bold shadow-xs';
                                 else if (statusKey === 'S') activeClass = 'bg-amber-500 text-white font-bold shadow-xs';
-                                else if (statusKey === 'I') activeClass = 'bg-blue-500 text-white font-bold shadow-xs';
+                                else if (statusKey === 'I') activeClass = 'bg-teal-600 text-white font-bold shadow-xs';
                                 else if (statusKey === 'A') activeClass = 'bg-rose-500 text-white font-bold shadow-xs';
 
                                 return (
@@ -474,7 +474,7 @@ export const AttendanceModule: React.FC = () => {
                               value={cur.notes}
                               onChange={(e) => handleNoteChange(st.id, e.target.value)}
                               placeholder="Surat dokter, izin urusan keluarga, dll..."
-                              className="w-full px-2.5 py-1 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700 outline-hidden focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full px-2.5 py-1 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700 outline-hidden focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
                             />
                           </td>
                         </tr>
@@ -494,7 +494,7 @@ export const AttendanceModule: React.FC = () => {
                 type="button"
                 onClick={handleSaveDaily}
                 disabled={isSaving}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer flex items-center gap-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 {isSaving ? 'Menyimpan...' : 'Simpan Presensi Hari Ini'}

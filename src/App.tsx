@@ -17,7 +17,7 @@ const AppContent: React.FC = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
+    <div className="flex h-screen w-full bg-slate-50 font-sans text-slate-900 antialiased selection:bg-emerald-200 selection:text-emerald-950 overflow-hidden">
       {/* Sleek Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}

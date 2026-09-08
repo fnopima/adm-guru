@@ -331,11 +331,11 @@ export const GradingModule: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           <div>
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-50 text-blue-700 rounded-xl">
+              <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
                 <GraduationCap className="w-5 h-5" />
               </div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                Pengolahan Nilai Siswa (Sumatif Lingkup Materi & SAS)
+                Pengolahan Nilai Siswa (Sumatif Lingkup Materi &amp; SAS)
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -349,9 +349,9 @@ export const GradingModule: React.FC = () => {
                 <button
                   onClick={() => setShowNewAssessmentModal(true)}
                   id="btn-add-assessment-column"
-                  className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5 text-blue-600" />
+                  <Plus className="w-3.5 h-3.5 text-amber-700" />
                   Tambah Kolom Penilaian
                 </button>
 
@@ -359,7 +359,7 @@ export const GradingModule: React.FC = () => {
                   onClick={handleSaveAllScores}
                   disabled={isSaving}
                   id="btn-save-all-grades"
-                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer disabled:opacity-50"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer disabled:opacity-50"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {isSaving ? 'Menyimpan...' : 'Simpan Semua Nilai'}
@@ -370,7 +370,7 @@ export const GradingModule: React.FC = () => {
             <button
               onClick={handleExportExcel}
               id="btn-export-grades-excel"
-              className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
               Ekspor Excel (.xlsx)
@@ -437,7 +437,7 @@ export const GradingModule: React.FC = () => {
           {/* RBAC Notice */}
           <div className="text-xs">
             {canEdit ? (
-              <span className="text-blue-700 font-semibold flex items-center gap-1">
+              <span className="text-emerald-700 font-semibold flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 Izin pengeditan aktif untuk mapel ini (Guru Pengampu: {teacherDisplayName})
               </span>
@@ -452,43 +452,43 @@ export const GradingModule: React.FC = () => {
       </div>
 
       {/* Grade Matrix Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-emerald-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider text-center">
-                <th rowSpan={2} className="py-3 px-3 w-10 border-r border-slate-700">No</th>
-                <th rowSpan={2} className="py-3 px-4 min-w-[170px] text-left border-r border-slate-700">Nama Siswa</th>
-                <th rowSpan={2} className="py-3 px-3 w-24 border-r border-slate-700">NIS</th>
+              <tr className="bg-emerald-950 text-white text-[11px] font-bold uppercase tracking-wider text-center">
+                <th rowSpan={2} className="py-3 px-3 w-10 border-r border-emerald-900">No</th>
+                <th rowSpan={2} className="py-3 px-4 min-w-[170px] text-left border-r border-emerald-900">Nama Siswa</th>
+                <th rowSpan={2} className="py-3 px-3 w-24 border-r border-emerald-900">NIS</th>
 
                 {/* Sumatif Lingkup Materi Group Header */}
-                <th colSpan={slmItems.length > 0 ? slmItems.length : 1} className="py-2 px-2 bg-emerald-900 border-r border-slate-700">
+                <th colSpan={slmItems.length > 0 ? slmItems.length : 1} className="py-2 px-2 bg-emerald-900 border-r border-emerald-800 text-emerald-100 font-bold">
                   Sumatif Lingkup Materi (SLM)
                 </th>
 
                 {/* Rata-rata SLM */}
-                <th rowSpan={2} className="py-3 px-3 w-24 bg-emerald-800 text-emerald-100 border-r border-slate-700">
+                <th rowSpan={2} className="py-3 px-3 w-24 bg-emerald-800 text-emerald-100 border-r border-emerald-700">
                   Rata-rata SLM
                 </th>
 
                 {/* Sumatif Akhir Semester (SAS) */}
-                <th rowSpan={2} className="py-3 px-3 w-24 bg-blue-900 text-blue-100 border-r border-slate-700">
+                <th rowSpan={2} className="py-3 px-3 w-24 bg-teal-900 text-teal-100 border-r border-teal-800">
                   {sasItem?.title || 'SAS'}
                 </th>
 
                 {/* Nilai Akhir (NA) */}
-                <th rowSpan={2} className="py-3 px-3 w-20 bg-slate-900 text-slate-200 border-r border-slate-700">
+                <th rowSpan={2} className="py-3 px-3 w-20 bg-slate-900 text-slate-200 border-r border-slate-800">
                   Nilai Akhir (NA)
                 </th>
 
                 {/* Nilai Akhir Dibulatkan */}
-                <th rowSpan={2} className="py-3 px-3 w-24 bg-amber-500 text-slate-950 font-black">
+                <th rowSpan={2} className="py-3 px-3 w-24 bg-amber-400 text-slate-950 font-black">
                   Nilai Akhir (Dibulatkan)
                 </th>
               </tr>
 
               {/* Second row of header: Assessment Names */}
-              <tr className="bg-slate-700 text-slate-200 text-[10px] uppercase font-bold text-center">
+              <tr className="bg-emerald-900/90 text-emerald-100 text-[10px] uppercase font-bold text-center">
                 {slmItems.length === 0 ? (
                   <th className="py-2 px-3 border-r border-slate-600 text-slate-400 font-normal">
                     Belum ada kolom SLM
@@ -583,7 +583,7 @@ export const GradingModule: React.FC = () => {
                     </td>
 
                     {/* SAS Score */}
-                    <td className="py-2 px-2 text-center border-r border-slate-200 bg-blue-50/30">
+                    <td className="py-2 px-2 text-center border-r border-slate-200 bg-teal-50/20">
                       {sasItem ? (
                         <input
                           type="number"
@@ -595,7 +595,7 @@ export const GradingModule: React.FC = () => {
                           placeholder="0-100"
                           className={`w-16 px-2 py-1 text-center font-bold rounded-lg border text-xs outline-hidden ${
                             canEdit 
-                              ? 'bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500' 
+                              ? 'bg-slate-50 border-slate-300 focus:bg-white focus:border-emerald-500' 
                               : 'bg-slate-100/50 border-transparent text-slate-600'
                           }`}
                         />
@@ -681,7 +681,7 @@ export const GradingModule: React.FC = () => {
                     })}
                     className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${
                       newAssessmentData.type === 'akhir_semester'
-                        ? 'bg-blue-50 border-blue-500 text-blue-800'
+                        ? 'bg-amber-50 border-amber-500 text-amber-900'
                         : 'bg-white border-slate-200 text-slate-600'
                     }`}
                   >
@@ -723,7 +723,7 @@ export const GradingModule: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm text-xs transition"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm text-xs transition cursor-pointer"
                 >
                   Buat Kolom
                 </button>
