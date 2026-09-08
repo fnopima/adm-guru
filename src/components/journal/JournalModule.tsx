@@ -19,6 +19,21 @@ import { TeachingJournal } from '../../types';
 import { PrintModal } from '../common/PrintModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 
+// Helper to compute day name in Indonesian from date string (YYYY-MM-DD)
+const getIndonesianDayName = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const dateObj = new Date(year, month, day);
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    return dayNames[dateObj.getDay()] || '';
+  }
+  return '';
+};
+
 export const JournalModule: React.FC = () => {
   const {
     currentUser,
@@ -86,14 +101,17 @@ export const JournalModule: React.FC = () => {
     const isTim = defaultSubj?.teacherId === 'TIM_ASATIDZAH';
     const defaultTeacher = isTim ? null : teachers.find(t => t.id === defaultSubj?.teacherId);
 
-    const todayDate = new Date().toISOString().split('T')[0];
-    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const currentDayName = dayNames[new Date().getDay()];
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayDate = `${year}-${month}-${day}`;
+    const calculatedDay = getIndonesianDayName(todayDate) || 'Senin';
 
     setFormData({
       classId: selectedClassId,
       date: todayDate,
-      day: currentDayName === 'Minggu' || currentDayName === 'Sabtu' ? 'Senin' : currentDayName,
+      day: calculatedDay,
       period: 'Jam ke 1 - 2 (07:15 - 08:25)',
       subjectId: defaultSubj?.id || '',
       subjectName: defaultSubj?.name || '',
@@ -130,12 +148,18 @@ export const JournalModule: React.FC = () => {
       return;
     }
 
+    const calculatedDay = getIndonesianDayName(formData.date) || formData.day || 'Senin';
+    const submissionData = {
+      ...formData,
+      day: calculatedDay,
+    };
+
     try {
       if (journalModal.editId) {
-        await updateJournal(journalModal.editId, formData);
+        await updateJournal(journalModal.editId, submissionData);
         showNotification('success', 'Jurnal pembelajaran berhasil diperbarui!');
       } else {
-        await addJournal(formData);
+        await addJournal(submissionData);
         showNotification('success', 'Jurnal pembelajaran baru berhasil dicatat!');
       }
       setJournalModal({ open: false });
@@ -297,10 +321,11 @@ export const JournalModule: React.FC = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => {
+                          const calculatedDay = getIndonesianDayName(journal.date) || journal.day || 'Senin';
                           setFormData({
                             classId: journal.classId,
                             date: journal.date,
-                            day: journal.day,
+                            day: calculatedDay,
                             period: journal.period,
                             subjectId: journal.subjectId,
                             subjectName: journal.subjectName,
@@ -424,7 +449,15 @@ export const JournalModule: React.FC = () => {
                   <input
                     type="date"
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(e) => {
+                      const newDate = e.target.value;
+                      const autoDay = getIndonesianDayName(newDate);
+                      setFormData(prev => ({
+                        ...prev,
+                        date: newDate,
+                        day: autoDay,
+                      }));
+                    }}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-bold"
                     required
                   />
@@ -433,16 +466,21 @@ export const JournalModule: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Hari</label>
-                  <select
+                  <label className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>Hari</span>
+                    <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                      Otomatis dari tanggal
+                    </span>
+                  </label>
+                  <input
+                    type="text"
                     value={formData.day}
-                    onChange={(e) => setFormData({ ...formData, day: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg"
-                  >
-                    {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].map(d => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
+                    readOnly
+                    disabled
+                    placeholder="Otomatis dari tanggal..."
+                    className="w-full px-3 py-2 bg-slate-100 border border-slate-300 text-slate-800 font-bold rounded-lg cursor-not-allowed select-none"
+                    title="Hari diisi otomatis berdasarkan tanggal pembelajaran yang diinput dan tidak bisa diedit manual"
+                  />
                 </div>
 
                 <div>

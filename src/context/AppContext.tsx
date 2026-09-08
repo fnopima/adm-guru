@@ -27,16 +27,7 @@ import {
 } from '../types';
 import { 
   initialSchoolSettings, 
-  initialTeachers, 
-  initialClasses, 
-  initialStudents, 
-  initialSubjects, 
-  initialTimeSlots, 
-  initialScheduleEntries, 
-  initialJournals, 
-  initialAssessments, 
-  initialIncidents,
-  generateSampleAttendance 
+  initialTimeSlots 
 } from '../lib/initialData';
 
 interface AppContextType {
@@ -192,19 +183,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [schoolSettings, setSchoolSettings] = useState<SchoolSettings>(initialSchoolSettings);
-  const [teachers, setTeachers] = useState<Teacher[]>(sortTeachers(initialTeachers));
-  const [classes, setClasses] = useState<ClassRoom[]>(sortClasses(initialClasses));
-  const [students, setStudents] = useState<Student[]>(sortStudents(initialStudents));
-  const [subjects, setSubjects] = useState<Subject[]>(sortSubjects(initialSubjects));
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [classes, setClasses] = useState<ClassRoom[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
-  const [schedules, setSchedules] = useState<ScheduleEntry[]>(initialScheduleEntries);
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(generateSampleAttendance());
-  const [journals, setJournals] = useState<TeachingJournal[]>(initialJournals);
-  const [assessments, setAssessments] = useState<ClassSubjectAssessment[]>(initialAssessments);
-  const [incidents, setIncidents] = useState<StudentIncident[]>(initialIncidents);
+  const [schedules, setSchedules] = useState<ScheduleEntry[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [journals, setJournals] = useState<TeachingJournal[]>([]);
+  const [assessments, setAssessments] = useState<ClassSubjectAssessment[]>([]);
+  const [incidents, setIncidents] = useState<StudentIncident[]>([]);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
-  const databaseInitializedRef = useRef<boolean>(false);
 
   // Persist session to local storage
   useEffect(() => {
@@ -229,15 +219,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         setSyncStatus('syncing');
 
-        // Check if settings doc exists in firestore; if empty, initialize with starter data
+        // Check if settings doc exists in firestore
         const settingsRef = doc(db, 'system', 'school_settings');
         unsubscribeSettings = onSnapshot(settingsRef, (snap) => {
           if (snap.exists()) {
-            databaseInitializedRef.current = true;
             setSchoolSettings(snap.data() as SchoolSettings);
-          } else {
-            // Seed initial settings
-            safeSetDoc(settingsRef, initialSchoolSettings).catch(console.error);
           }
         }, (err) => {
           console.warn('Firestore settings listener:', err);
@@ -248,7 +234,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const teachersCol = collection(db, 'teachers');
         unsubscribeTeachers = onSnapshot(teachersCol, (snap) => {
           if (!snap.empty) {
-            databaseInitializedRef.current = true;
             const list: Teacher[] = [];
             snap.forEach((d) => {
               const data = d.data() as Record<string, any>;
@@ -260,14 +245,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               list.push({ id: d.id, ...data } as Teacher);
             });
             setTeachers(sortTeachers(list));
-          } else if (!databaseInitializedRef.current) {
-            // Seed teachers only on initial empty db
-            initialTeachers.forEach(t => {
-              const teacherData: any = { ...t };
-              delete teacherData.username;
-              safeSetDoc(doc(db, 'teachers', t.id), teacherData).catch(console.error);
-            });
-            setTeachers(sortTeachers(initialTeachers));
           } else {
             setTeachers([]);
           }
@@ -277,15 +254,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const classesCol = collection(db, 'classes');
         unsubscribeClasses = onSnapshot(classesCol, (snap) => {
           if (!snap.empty) {
-            databaseInitializedRef.current = true;
             const list: ClassRoom[] = [];
             snap.forEach((d) => list.push({ id: d.id, ...d.data() } as ClassRoom));
             setClasses(sortClasses(list));
-          } else if (!databaseInitializedRef.current) {
-            // Seed classes only on first initialization
-            initialClasses.forEach(c => {
-              safeSetDoc(doc(db, 'classes', c.id), c).catch(console.error);
-            });
           } else {
             setClasses([]);
           }
@@ -295,15 +266,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const studentsCol = collection(db, 'students');
         unsubscribeStudents = onSnapshot(studentsCol, (snap) => {
           if (!snap.empty) {
-            databaseInitializedRef.current = true;
             const list: Student[] = [];
             snap.forEach((d) => list.push({ id: d.id, ...d.data() } as Student));
             setStudents(sortStudents(list));
-          } else if (!databaseInitializedRef.current) {
-            initialStudents.forEach(s => {
-              safeSetDoc(doc(db, 'students', s.id), s).catch(console.error);
-            });
-            setStudents(sortStudents(initialStudents));
           } else {
             setStudents([]);
           }
@@ -317,10 +282,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             snap.forEach((d) => list.push({ id: d.id, ...d.data() } as Subject));
             setSubjects(sortSubjects(list));
           } else {
-            initialSubjects.forEach(s => {
-              safeSetDoc(doc(db, 'subjects', s.id), s).catch(console.error);
-            });
-            setSubjects(sortSubjects(initialSubjects));
+            setSubjects([]);
           }
         }, (err) => console.warn('Subjects sync err:', err));
 
@@ -330,7 +292,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (snap.exists() && snap.data().slots) {
             setTimeSlots(snap.data().slots as TimeSlot[]);
           } else {
-            safeSetDoc(timeSlotsDoc, { slots: initialTimeSlots }).catch(console.error);
+            setTimeSlots(initialTimeSlots);
           }
         }, (err) => console.warn('TimeSlots sync err:', err));
 
@@ -342,9 +304,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             snap.forEach((d) => list.push({ id: d.id, ...d.data() } as ScheduleEntry));
             setSchedules(list);
           } else {
-            initialScheduleEntries.forEach(sc => {
-              safeSetDoc(doc(db, 'schedules', sc.id), sc).catch(console.error);
-            });
+            setSchedules([]);
           }
         }, (err) => console.warn('Schedules sync err:', err));
 
@@ -356,10 +316,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             snap.forEach((d) => list.push({ id: d.id, ...d.data() } as AttendanceRecord));
             setAttendanceRecords(list);
           } else {
-            const sampleAtt = generateSampleAttendance();
-            sampleAtt.forEach(att => {
-              safeSetDoc(doc(db, 'attendance', att.id), att).catch(console.error);
-            });
+            setAttendanceRecords([]);
           }
         }, (err) => console.warn('Attendance sync err:', err));
 
@@ -371,9 +328,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             snap.forEach((d) => list.push({ id: d.id, ...d.data() } as TeachingJournal));
             setJournals(list);
           } else {
-            initialJournals.forEach(j => {
-              safeSetDoc(doc(db, 'journals', j.id), j).catch(console.error);
-            });
+            setJournals([]);
           }
         }, (err) => console.warn('Journals sync err:', err));
 
@@ -385,9 +340,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             snap.forEach((d) => list.push({ id: d.id, ...d.data() } as ClassSubjectAssessment));
             setAssessments(list);
           } else {
-            initialAssessments.forEach(asm => {
-              safeSetDoc(doc(db, 'assessments', asm.id), asm).catch(console.error);
-            });
+            setAssessments([]);
           }
         }, (err) => console.warn('Assessments sync err:', err));
 
@@ -395,7 +348,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const incidentsCol = collection(db, 'incidents');
         unsubscribeIncidents = onSnapshot(incidentsCol, (snap) => {
           if (!snap.empty) {
-            databaseInitializedRef.current = true;
             const list: StudentIncident[] = [];
             snap.forEach((d) => {
               const data = d.data() as any;
@@ -418,10 +370,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               });
             });
             setIncidents(list);
-          } else if (!databaseInitializedRef.current) {
-            initialIncidents.forEach(inc => {
-              safeSetDoc(doc(db, 'incidents', inc.id), inc).catch(console.error);
-            });
           } else {
             setIncidents([]);
           }
@@ -1096,39 +1044,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Reset to default data helper (for testing & demonstration)
+  // Reset to default data helper (dinonaktifkan untuk melindungi data nyata sekolah di database agar tidak tertimpa)
   const resetToDefaultData = async () => {
-    setIsSyncing(true);
-    try {
-      setSchoolSettings(initialSchoolSettings);
-      setTeachers(initialTeachers);
-      setClasses(sortClasses(initialClasses));
-      setStudents(initialStudents);
-      setSubjects(initialSubjects);
-      setTimeSlots(initialTimeSlots);
-      setSchedules(initialScheduleEntries);
-      setAttendanceRecords(generateSampleAttendance());
-      setJournals(initialJournals);
-      setAssessments(initialAssessments);
-      setIncidents(initialIncidents);
-
-      await safeSetDoc(doc(db, 'system', 'school_settings'), initialSchoolSettings);
-      await safeSetDoc(doc(db, 'system', 'time_slots'), { slots: initialTimeSlots });
-      
-      for (const t of initialTeachers) await safeSetDoc(doc(db, 'teachers', t.id), t);
-      for (const c of initialClasses) await safeSetDoc(doc(db, 'classes', c.id), c);
-      for (const s of initialStudents) await safeSetDoc(doc(db, 'students', s.id), s);
-      for (const sub of initialSubjects) await safeSetDoc(doc(db, 'subjects', sub.id), sub);
-      for (const sc of initialScheduleEntries) await safeSetDoc(doc(db, 'schedules', sc.id), sc);
-      for (const att of generateSampleAttendance()) await safeSetDoc(doc(db, 'attendance', att.id), att);
-      for (const j of initialJournals) await safeSetDoc(doc(db, 'journals', j.id), j);
-      for (const a of initialAssessments) await safeSetDoc(doc(db, 'assessments', a.id), a);
-      for (const inc of initialIncidents) await safeSetDoc(doc(db, 'incidents', inc.id), inc);
-    } catch (e) {
-      console.error('Reset error:', e);
-    } finally {
-      setIsSyncing(false);
-    }
+    console.warn('resetToDefaultData dinonaktifkan untuk memastikan data sekolah di Firestore tidak tertimpa.');
   };
 
   return (
