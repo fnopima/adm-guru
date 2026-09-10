@@ -124,8 +124,8 @@ export interface TeachingJournal {
 
 export interface AssessmentItem {
   id: string;
-  title: string; // e.g. "Sumatif 1: Bilangan Cacah", "Sumatif Akhir Semester"
-  type: 'lingkup_materi' | 'akhir_semester';
+  title: string; // e.g. "Sumatif 1: Bilangan Cacah", "Sumatif Tengah Semester", "Sumatif Akhir Semester"
+  type: 'lingkup_materi' | 'tengah_semester' | 'akhir_semester';
   date: string; // YYYY-MM-DD
   topic?: string;
   maxScore: number; // default 100

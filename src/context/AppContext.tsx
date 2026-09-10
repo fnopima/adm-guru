@@ -78,7 +78,7 @@ interface AppContextType {
   deleteJournal: (id: string) => Promise<void>;
   
   assessments: ClassSubjectAssessment[];
-  saveAssessmentItem: (classId: string, subjectId: string, item: { id?: string; title: string; type: 'lingkup_materi' | 'akhir_semester'; date: string; topic?: string; maxScore: number }) => Promise<void>;
+  saveAssessmentItem: (classId: string, subjectId: string, item: { id?: string; title: string; type: 'lingkup_materi' | 'tengah_semester' | 'akhir_semester'; date: string; topic?: string; maxScore: number }) => Promise<void>;
   deleteAssessmentItem: (classId: string, subjectId: string, itemId: string) => Promise<void>;
   saveStudentScores: (classId: string, subjectId: string, studentScores: { studentId: string; scores: Record<string, number | null> }[]) => Promise<void>;
   
@@ -232,8 +232,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (snap.exists()) {
             setSchoolSettings(snap.data() as SchoolSettings);
           }
+          setSyncStatus('synced');
         }, (err) => {
-          console.warn('Firestore settings listener:', err);
+          if (err?.code !== 'unavailable') console.warn('Firestore settings listener:', err);
           setSyncStatus('offline');
         });
 
@@ -246,7 +247,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               const data = d.data() as Record<string, any>;
               if (data && 'username' in data) {
                 // Remove username from database document in Firestore
-                safeSetDoc(doc(db, 'teachers', d.id), { username: deleteField() }, { merge: true }).catch(console.warn);
+                safeSetDoc(doc(db, 'teachers', d.id), { username: deleteField() }, { merge: true }).catch(() => {});
                 delete data.username;
               }
               list.push({ id: d.id, ...data } as Teacher);
@@ -255,7 +256,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setTeachers([]);
           }
-        }, (err) => console.warn('Teachers sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Teachers sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Classes listener
         const classesCol = collection(db, 'classes');
@@ -267,7 +272,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setClasses([]);
           }
-        }, (err) => console.warn('Classes sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Classes sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Students listener
         const studentsCol = collection(db, 'students');
@@ -279,7 +288,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setStudents([]);
           }
-        }, (err) => console.warn('Students sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Students sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Subjects listener
         const subjectsCol = collection(db, 'subjects');
@@ -291,7 +304,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setSubjects([]);
           }
-        }, (err) => console.warn('Subjects sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Subjects sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // TimeSlots listener (doc in system)
         const timeSlotsDoc = doc(db, 'system', 'time_slots');
@@ -301,7 +318,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setTimeSlots(initialTimeSlots);
           }
-        }, (err) => console.warn('TimeSlots sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('TimeSlots sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Schedules listener
         const schedulesCol = collection(db, 'schedules');
@@ -313,7 +334,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setSchedules([]);
           }
-        }, (err) => console.warn('Schedules sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Schedules sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Attendance listener
         const attendanceCol = collection(db, 'attendance');
@@ -325,7 +350,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setAttendanceRecords([]);
           }
-        }, (err) => console.warn('Attendance sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Attendance sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Journals listener
         const journalsCol = collection(db, 'journals');
@@ -337,7 +366,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setJournals([]);
           }
-        }, (err) => console.warn('Journals sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Journals sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Assessments listener
         const assessmentsCol = collection(db, 'assessments');
@@ -349,7 +382,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setAssessments([]);
           }
-        }, (err) => console.warn('Assessments sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Assessments sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Incidents listener
         const incidentsCol = collection(db, 'incidents');
@@ -380,7 +417,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setIncidents([]);
           }
-        }, (err) => console.warn('Incidents sync err:', err));
+          setSyncStatus('synced');
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Incidents sync err:', err);
+          setSyncStatus('offline');
+        });
 
         // Multimedia bookings listener
         const multimediaCol = collection(db, 'multimedia_bookings');
@@ -410,7 +451,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setMultimediaBookings([]);
           }
           setSyncStatus('synced');
-        }, (err) => console.warn('Multimedia bookings sync err:', err));
+        }, (err) => {
+          if (err?.code !== 'unavailable') console.warn('Multimedia bookings sync err:', err);
+          setSyncStatus('offline');
+        });
 
       } catch (err) {
         console.error('Error initializing Firestore sync:', err);
@@ -905,7 +949,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const saveAssessmentItem = async (
     classId: string, 
     subjectId: string, 
-    item: { id?: string; title: string; type: 'lingkup_materi' | 'akhir_semester'; date: string; topic?: string; maxScore: number }
+    item: { id?: string; title: string; type: 'lingkup_materi' | 'tengah_semester' | 'akhir_semester'; date: string; topic?: string; maxScore: number }
   ) => {
     setIsSyncing(true);
     const recordId = `${classId}_${subjectId}`;

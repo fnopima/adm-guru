@@ -35,7 +35,7 @@ export const AttendanceModule: React.FC = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('daily');
 
   // Daily State
-  const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || '');
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     // Current date in YYYY-MM-DD
     const d = new Date();
@@ -269,15 +269,19 @@ export const AttendanceModule: React.FC = () => {
         {/* Filter Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 mt-5">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Class Selector */}
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs">
-              <span className="font-semibold text-slate-600">Rombel:</span>
+            {/* Class Selector - Enlarged and Prominent */}
+            <div className="flex items-center gap-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-500 hover:border-emerald-600 px-3.5 py-2 rounded-xl shadow-xs transition-all focus-within:ring-2 focus-within:ring-emerald-400">
+              <span className="font-extrabold text-emerald-950 text-xs sm:text-sm shrink-0 flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-emerald-700" />
+                Pilih Kelas:
+              </span>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
                 id="select-attendance-class"
-                className="bg-transparent font-bold text-slate-900 outline-hidden cursor-pointer"
+                className="bg-transparent font-black text-slate-900 text-xs sm:text-sm outline-hidden cursor-pointer min-w-[170px]"
               >
+                <option value="">-- Pilih Kelas --</option>
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -334,8 +338,9 @@ export const AttendanceModule: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSetAllPresent}
+                  disabled={!selectedClassId}
                   id="btn-set-all-present"
-                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 disabled:opacity-40 disabled:cursor-not-allowed text-amber-900 border border-amber-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                   title="Isi otomatis seluruh siswa dengan status Hadir (H)"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-600" />
@@ -345,9 +350,9 @@ export const AttendanceModule: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSaveDaily}
-                  disabled={isSaving}
+                  disabled={!selectedClassId || isSaving}
                   id="btn-save-attendance"
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer disabled:opacity-50"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {isSaving ? 'Menyimpan...' : 'Simpan Presensi'}
@@ -357,8 +362,9 @@ export const AttendanceModule: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPrintModal(true)}
+                disabled={!selectedClassId}
                 id="btn-print-attendance-recap"
-                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5" />
                 Cetak Rekap Bulanan PDF
@@ -367,6 +373,22 @@ export const AttendanceModule: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* When no class is selected */}
+      {!selectedClassId ? (
+        <div className="bg-white rounded-2xl shadow-xs border-2 border-dashed border-emerald-200 p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Silakan Pilih Kelas Terlebih Dahulu
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            Gunakan dropdown box <strong>"Pilih Kelas"</strong> di atas untuk memuat daftar siswa dan mencatat presensi harian atau melihat rekap bulanan.
+          </p>
+        </div>
+      ) : (
+      <>
 
       {/* ================= VIEW 1: PRESENSI HARIAN ================= */}
       {viewMode === 'daily' && (
@@ -579,6 +601,8 @@ export const AttendanceModule: React.FC = () => {
             * Rumus Prosentase Kehadiran: (Jumlah H / (H + S + I + A)) x 100%
           </p>
         </div>
+      )}
+      </>
       )}
 
       {/* ================= PRINT REKAP BULANAN PDF ================= */}

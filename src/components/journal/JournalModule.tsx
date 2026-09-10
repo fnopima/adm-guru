@@ -62,7 +62,7 @@ export const JournalModule: React.FC = () => {
   } = useApp();
 
   // Filters: Class, Subject, Date Range, Day of Week, and Search
-  const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || 'ALL');
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('ALL');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -344,15 +344,19 @@ export const JournalModule: React.FC = () => {
         {/* Filter Controls: Filter Berdasarkan Kelas dan Rentang Hari / Tanggal */}
         <div className="mt-5 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 items-center">
-            {/* 1. Filter Kelas (Rombel) */}
-            <div className="lg:col-span-3 flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500 focus-within:bg-white transition">
-              <span className="font-bold text-slate-700 shrink-0">Kelas:</span>
+            {/* 1. Filter Kelas (Rombel) - Enlarged and Prominent */}
+            <div className="lg:col-span-4 flex items-center gap-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-500 hover:border-emerald-600 px-3.5 py-2 rounded-xl text-xs sm:text-sm shadow-xs transition-all focus-within:ring-2 focus-within:ring-emerald-400">
+              <span className="font-extrabold text-emerald-950 shrink-0 flex items-center gap-1.5">
+                <BookOpen className="w-4 h-4 text-emerald-700" />
+                Pilih Kelas:
+              </span>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
                 id="select-journal-class"
-                className="w-full bg-transparent font-bold text-emerald-800 outline-hidden cursor-pointer"
+                className="w-full bg-transparent font-black text-slate-900 text-xs sm:text-sm outline-hidden cursor-pointer"
               >
+                <option value="">-- Pilih Kelas --</option>
                 <option value="ALL">Semua Kelas</option>
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -397,7 +401,7 @@ export const JournalModule: React.FC = () => {
             </div>
 
             {/* 4. Pencarian Teks */}
-            <div className="lg:col-span-4 relative">
+            <div className="lg:col-span-3 relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
@@ -525,6 +529,26 @@ export const JournalModule: React.FC = () => {
       </div>
 
       {/* Journal Cards / List */}
+      {!selectedClassId ? (
+        <div className="bg-white rounded-2xl shadow-xs border-2 border-dashed border-emerald-200 p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Silakan Pilih Kelas Terlebih Dahulu
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
+            Gunakan dropdown box <strong>"Pilih Kelas"</strong> di atas untuk memuat catatan jurnal mengajar kelas tertentu, atau klik tombol di bawah untuk menampilkan seluruh kelas.
+          </p>
+          <button
+            type="button"
+            onClick={() => setSelectedClassId('ALL')}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer"
+          >
+            Tampilkan Semua Kelas
+          </button>
+        </div>
+      ) : (
       <div className="space-y-3">
         {filteredJournals.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-2xs">
@@ -653,6 +677,7 @@ export const JournalModule: React.FC = () => {
           })
         )}
       </div>
+      )}
 
       {/* ================= MODAL TULIS / EDIT JURNAL ================= */}
       {journalModal.open && (

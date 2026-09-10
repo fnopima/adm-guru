@@ -10,7 +10,8 @@ import {
   CheckCircle2, 
   Settings2, 
   AlertCircle,
-  X
+  X,
+  GraduationCap
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { TimeSlot, ScheduleEntry } from '../../types';
@@ -33,7 +34,7 @@ export const ScheduleModule: React.FC = () => {
     schoolSettings,
   } = useApp();
 
-  const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || '');
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [showPrintModal, setShowPrintModal] = useState(false);
 
   // Time slot manager modal state
@@ -191,16 +192,20 @@ export const ScheduleModule: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Class Selector */}
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs">
-              <span className="font-semibold text-slate-600">Pilih Kelas:</span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Class Selector - Enlarged and Prominent */}
+            <div className="flex items-center gap-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-500 hover:border-emerald-600 px-3.5 py-2 rounded-xl shadow-xs transition-all focus-within:ring-2 focus-within:ring-emerald-400">
+              <span className="font-extrabold text-emerald-950 text-xs sm:text-sm shrink-0 flex items-center gap-1.5">
+                <GraduationCap className="w-4 h-4 text-emerald-700" />
+                Pilih Kelas:
+              </span>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
                 id="select-schedule-class"
-                className="bg-transparent font-bold text-slate-900 outline-hidden cursor-pointer"
+                className="bg-transparent font-black text-slate-900 text-xs sm:text-sm outline-hidden cursor-pointer min-w-[170px]"
               >
+                <option value="">-- Pilih Kelas --</option>
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -215,7 +220,7 @@ export const ScheduleModule: React.FC = () => {
                   setShowTimeSlotModal(true);
                 }}
                 id="btn-manage-timeslots"
-                className="px-3 py-1.5 bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer border border-emerald-200 shadow-2xs"
+                className="px-3.5 py-2 bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition cursor-pointer border border-emerald-200 shadow-2xs"
               >
                 <Clock className="w-3.5 h-3.5 text-emerald-600" />
                 Atur Durasi Waktu
@@ -225,8 +230,9 @@ export const ScheduleModule: React.FC = () => {
             {/* Print / Export PDF Button */}
             <button
               onClick={() => setShowPrintModal(true)}
+              disabled={!selectedClassId}
               id="btn-print-schedule"
-              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition shadow-sm cursor-pointer"
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition shadow-sm cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               Cetak / Ekspor PDF
@@ -235,28 +241,43 @@ export const ScheduleModule: React.FC = () => {
         </div>
 
         {/* Permission Indicator */}
-        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2 text-slate-600">
-            <span>Wali Kelas: <strong className="text-slate-900">{homeroomTeacher ? homeroomTeacher.name : '-'}</strong></span>
-            <span>•</span>
-            <span>Semester {schoolSettings.semester} TP {schoolSettings.academicYear}</span>
-          </div>
+        {selectedClassId ? (
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2 text-slate-600">
+              <span>Wali Kelas: <strong className="text-slate-900">{homeroomTeacher ? homeroomTeacher.name : '-'}</strong></span>
+              <span>•</span>
+              <span>Semester {schoolSettings.semester} TP {schoolSettings.academicYear}</span>
+            </div>
 
-          {canEdit ? (
-            <div className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/60">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Hak edit jadwal aktif (Klik pada sel jadwal untuk mengubah)</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 text-amber-800 font-medium bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200/60">
-              <Lock className="w-4 h-4 text-amber-600" />
-              <span>Mode Lihat (Hanya Wali Kelas <strong>{homeroomTeacher?.name}</strong> atau Admin yang dapat mengubah)</span>
-            </div>
-          )}
-        </div>
+            {canEdit ? (
+              <div className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/60">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Hak edit jadwal aktif (Klik pada sel jadwal untuk mengubah)</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-amber-800 font-medium bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200/60">
+                <Lock className="w-4 h-4 text-amber-600" />
+                <span>Mode Lihat (Hanya Wali Kelas <strong>{homeroomTeacher?.name}</strong> atau Admin yang dapat mengubah)</span>
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
-      {/* Main Schedule Matrix Table */}
+      {/* Main Schedule Matrix Table or Placeholder */}
+      {!selectedClassId ? (
+        <div className="bg-white rounded-2xl shadow-xs border-2 border-dashed border-emerald-200 p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center mx-auto mb-4">
+            <GraduationCap className="w-8 h-8" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Silakan Pilih Kelas Terlebih Dahulu
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            Gunakan dropdown box <strong>"Pilih Kelas"</strong> di bagian atas untuk memuat jadwal pelajaran kelas yang ingin dilihat atau dikelola.
+          </p>
+        </div>
+      ) : (
       <div className="bg-white rounded-2xl shadow-xs border border-emerald-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -361,6 +382,7 @@ export const ScheduleModule: React.FC = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* ================= MODAL ASSIGN JADWAL ================= */}
       {assignModal.open && (

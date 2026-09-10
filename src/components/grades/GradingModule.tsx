@@ -32,7 +32,7 @@ export const GradingModule: React.FC = () => {
     schoolSettings,
   } = useApp();
 
-  const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || '');
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -56,7 +56,7 @@ export const GradingModule: React.FC = () => {
   const [showNewAssessmentModal, setShowNewAssessmentModal] = useState(false);
   const [newAssessmentData, setNewAssessmentData] = useState<{
     title: string;
-    type: 'lingkup_materi' | 'akhir_semester';
+    type: 'lingkup_materi' | 'tengah_semester' | 'akhir_semester';
     topic: string;
   }>({
     title: 'Sumatif Lingkup Materi 1',
@@ -106,9 +106,29 @@ export const GradingModule: React.FC = () => {
     return assessmentItems.filter(i => i.type === 'lingkup_materi');
   }, [assessmentItems]);
 
+  const stsItem = useMemo(() => {
+    return assessmentItems.find(i => i.type === 'tengah_semester' || i.title.toLowerCase().includes('tengah semester') || i.title.toLowerCase().includes('sts'));
+  }, [assessmentItems]);
+
   const sasItem = useMemo(() => {
     return assessmentItems.find(i => i.type === 'akhir_semester');
   }, [assessmentItems]);
+
+  const handleQuickAddSTS = async () => {
+    if (!selectedClassId || !selectedSubjectId) return;
+    try {
+      await saveAssessmentItem(selectedClassId, selectedSubjectId, {
+        title: 'Sumatif Tengah Semester (STS)',
+        type: 'tengah_semester',
+        date: new Date().toISOString().split('T')[0],
+        topic: 'STS',
+        maxScore: 100,
+      });
+      showNotification('success', 'Kolom Sumatif Tengah Semester (STS) berhasil diaktifkan!');
+    } catch (err: any) {
+      showNotification('error', 'Gagal menambahkan kolom STS: ' + err.message);
+    }
+  };
 
   // Local scores state: Record<studentId, Record<itemId, number | null>>
   const [scoresBuffer, setScoresBuffer] = useState<Record<string, Record<string, number | ''>>>({});
@@ -215,33 +235,40 @@ export const GradingModule: React.FC = () => {
       });
       const avgSLM = countSLM > 0 ? sumSLM / countSLM : null;
 
-      // 2. SAS (Sumatif Akhir Semester)
+      // 2. STS (Sumatif Tengah Semester)
+      const stsScoreVal = stsItem ? scoresBuffer[st.id]?.[stsItem.id] : '';
+      const stsScore = typeof stsScoreVal === 'number' ? stsScoreVal : null;
+
+      // 3. SAS (Sumatif Akhir Semester)
       const sasScoreVal = sasItem ? scoresBuffer[st.id]?.[sasItem.id] : '';
       const sasScore = typeof sasScoreVal === 'number' ? sasScoreVal : null;
 
-      // 3. Nilai Akhir (NA) = (Rata-rata SLM + SAS) / 2
+      // 4. Nilai Akhir (NA) = Rata-rata dari (SLM, STS, SAS)
+      // Rumus spesifik: (SLM + STS + SAS) / 3
       let finalScore: number | null = null;
-      if (avgSLM !== null && sasScore !== null) {
-        finalScore = (avgSLM + sasScore) / 2;
-      } else if (avgSLM !== null) {
-        finalScore = avgSLM;
-      } else if (sasScore !== null) {
-        finalScore = sasScore;
+      const activeParts: number[] = [];
+      if (avgSLM !== null) activeParts.push(avgSLM);
+      if (stsScore !== null) activeParts.push(stsScore);
+      if (sasScore !== null) activeParts.push(sasScore);
+
+      if (activeParts.length > 0) {
+        finalScore = activeParts.reduce((acc, curr) => acc + curr, 0) / activeParts.length;
       }
 
-      // 4. Nilai Akhir Dibulatkan
+      // 5. Nilai Akhir Dibulatkan
       const roundedFinal = finalScore !== null ? Math.round(finalScore) : null;
 
       return {
         student: st,
         index: idx + 1,
         avgSLM: avgSLM !== null ? avgSLM.toFixed(1) : '-',
+        stsScore: stsScore !== null ? stsScore : '-',
         sasScore: sasScore !== null ? sasScore : '-',
         finalScore: finalScore !== null ? finalScore.toFixed(1) : '-',
         roundedFinal: roundedFinal !== null ? roundedFinal : '-',
       };
     });
-  }, [classStudents, slmItems, sasItem, scoresBuffer]);
+  }, [classStudents, slmItems, stsItem, sasItem, scoresBuffer]);
 
   // Ekspor Rekap Nilai ke Format Excel (.xlsx)
   const handleExportExcel = () => {
@@ -275,7 +302,13 @@ export const GradingModule: React.FC = () => {
       // Rata-rata SLM
       rowData['Rata-Rata SLM'] = row.avgSLM !== '-' ? parseFloat(row.avgSLM) : '';
 
-      // Sumatif Akhir Semester
+      // Sumatif Tengah Semester (STS)
+      if (stsItem) {
+        const stsSc = scoresBuffer[st.id]?.[stsItem.id];
+        rowData['STS'] = typeof stsSc === 'number' ? stsSc : '';
+      }
+
+      // Sumatif Akhir Semester (SAS)
       if (sasItem) {
         const sasSc = scoresBuffer[st.id]?.[sasItem.id];
         rowData['SAS'] = typeof sasSc === 'number' ? sasSc : '';
@@ -304,6 +337,9 @@ export const GradingModule: React.FC = () => {
     });
 
     cols.push({ wch: 16 }); // Rata-rata SLM
+    if (stsItem) {
+      cols.push({ wch: 14 }); // STS
+    }
     if (sasItem) {
       cols.push({ wch: 14 }); // SAS
     }
@@ -401,15 +437,19 @@ export const GradingModule: React.FC = () => {
         {/* Filter Controls & RBAC Status */}
         <div className="flex flex-wrap items-center justify-between gap-3 mt-5">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Class Selector */}
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs">
-              <span className="font-semibold text-slate-600">Pilih Kelas:</span>
+            {/* Class Selector - Enlarged and Prominent */}
+            <div className="flex items-center gap-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-500 hover:border-emerald-600 px-3.5 py-2 rounded-xl shadow-xs transition-all focus-within:ring-2 focus-within:ring-emerald-400">
+              <span className="font-extrabold text-emerald-950 text-xs sm:text-sm shrink-0 flex items-center gap-1.5">
+                <GraduationCap className="w-4 h-4 text-emerald-700" />
+                Pilih Kelas:
+              </span>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
                 id="select-grade-class"
-                className="bg-transparent font-bold text-slate-900 outline-hidden cursor-pointer"
+                className="bg-transparent font-black text-slate-900 text-xs sm:text-sm outline-hidden cursor-pointer min-w-[170px]"
               >
+                <option value="">-- Pilih Kelas --</option>
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -451,6 +491,22 @@ export const GradingModule: React.FC = () => {
         </div>
       </div>
 
+      {/* If No Class Selected */}
+      {!selectedClassId ? (
+        <div className="bg-white rounded-2xl shadow-xs border-2 border-dashed border-emerald-200 p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center mx-auto mb-4">
+            <GraduationCap className="w-8 h-8" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Silakan Pilih Kelas Terlebih Dahulu
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            Gunakan dropdown box <strong>"Pilih Kelas"</strong> di atas untuk memuat data penilaian siswa (Sumatif Lingkup Materi, Sumatif Tengah Semester, dan Sumatif Akhir Semester).
+          </p>
+        </div>
+      ) : (
+      <>
+
       {/* Grade Matrix Table */}
       <div className="bg-white rounded-xl shadow-sm border border-emerald-100 overflow-hidden">
         <div className="overflow-x-auto">
@@ -469,6 +525,39 @@ export const GradingModule: React.FC = () => {
                 {/* Rata-rata SLM */}
                 <th rowSpan={2} className="py-3 px-3 w-24 bg-emerald-800 text-emerald-100 border-r border-emerald-700">
                   Rata-rata SLM
+                </th>
+
+                {/* Sumatif Tengah Semester (STS) */}
+                <th rowSpan={2} className="py-3 px-3 w-28 bg-indigo-900 text-indigo-100 border-r border-indigo-800">
+                  <div className="flex items-center justify-between gap-1">
+                    <span>{stsItem?.title || 'STS'}</span>
+                    {stsItem && canEdit && (
+                      <button
+                        onClick={() => {
+                          setDeleteConfirm({
+                            open: true,
+                            title: 'Hapus Kolom STS',
+                            confirmId: `confirm-delete-col-${stsItem.id}`,
+                            message: (
+                              <p>
+                                Apakah Anda yakin ingin menghapus kolom <strong>"{stsItem.title}"</strong>? Nilai seluruh siswa pada kolom ini akan dihapus.
+                              </p>
+                            ),
+                            onConfirm: async () => {
+                              deleteAssessmentItem(selectedClassId, selectedSubjectId, stsItem.id);
+                              setDeleteConfirm(prev => ({ ...prev, open: false }));
+                              setFeedback({ type: 'success', message: `Kolom "${stsItem.title}" berhasil dihapus.` });
+                              setTimeout(() => setFeedback(null), 3000);
+                            },
+                          });
+                        }}
+                        className="p-1 text-indigo-300 hover:text-rose-300 transition cursor-pointer"
+                        title="Hapus Kolom STS"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </th>
 
                 {/* Sumatif Akhir Semester (SAS) */}
@@ -582,6 +671,38 @@ export const GradingModule: React.FC = () => {
                       {row.avgSLM}
                     </td>
 
+                    {/* Sumatif Tengah Semester (STS) */}
+                    <td className="py-2 px-2 text-center border-r border-slate-200 bg-indigo-50/20">
+                      {stsItem ? (
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          disabled={!canEdit}
+                          value={scoresBuffer[row.student.id]?.[stsItem.id] ?? ''}
+                          onChange={(e) => handleScoreChange(row.student.id, stsItem.id, e.target.value)}
+                          placeholder="0-100"
+                          className={`w-16 px-2 py-1 text-center font-bold rounded-lg border text-xs outline-hidden ${
+                            canEdit 
+                              ? 'bg-indigo-50/50 border-indigo-300 focus:bg-white focus:border-indigo-500' 
+                              : 'bg-slate-100/50 border-transparent text-slate-600'
+                          }`}
+                        />
+                      ) : (
+                        canEdit ? (
+                          <button
+                            type="button"
+                            onClick={handleQuickAddSTS}
+                            className="px-2 py-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-md transition cursor-pointer whitespace-nowrap"
+                          >
+                            + Aktifkan STS
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-slate-400">Belum ada STS</span>
+                        )
+                      )}
+                    </td>
+
                     {/* SAS Score */}
                     <td className="py-2 px-2 text-center border-r border-slate-200 bg-teal-50/20">
                       {sasItem ? (
@@ -623,7 +744,7 @@ export const GradingModule: React.FC = () => {
         {/* Footer info & Save bar */}
         <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="space-y-1 text-slate-500">
-            <p><strong>Rumus Nilai Akhir (NA):</strong> (Rata-rata Sumatif Lingkup Materi + SAS) ÷ 2</p>
+            <p><strong>Rumus Nilai Akhir (NA):</strong> Rata-rata dari (Rata-rata SLM + STS + SAS) ÷ 3</p>
             <p><strong>Pembulatan:</strong> Dibulatkan ke bilangan bulat terdekat (misal 78.5 menjadi 79)</p>
           </div>
 
@@ -639,6 +760,8 @@ export const GradingModule: React.FC = () => {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {/* ================= MODAL TAMBAH PENILAIAN ================= */}
       {showNewAssessmentModal && (
@@ -655,7 +778,7 @@ export const GradingModule: React.FC = () => {
             <form onSubmit={handleCreateAssessment} className="p-6 space-y-4 text-xs">
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">Jenis Penilaian</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setNewAssessmentData({
@@ -663,13 +786,29 @@ export const GradingModule: React.FC = () => {
                       type: 'lingkup_materi',
                       title: `Sumatif Lingkup Materi ${slmItems.length + 1}`
                     })}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${
+                    className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition text-center leading-tight ${
                       newAssessmentData.type === 'lingkup_materi'
                         ? 'bg-emerald-50 border-emerald-500 text-emerald-800'
                         : 'bg-white border-slate-200 text-slate-600'
                     }`}
                   >
-                    Sumatif Lingkup Materi (SLM)
+                    Sumatif Materi (SLM)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewAssessmentData({
+                      ...newAssessmentData,
+                      type: 'tengah_semester',
+                      title: 'Sumatif Tengah Semester (STS)'
+                    })}
+                    className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition text-center leading-tight ${
+                      newAssessmentData.type === 'tengah_semester'
+                        ? 'bg-indigo-50 border-indigo-500 text-indigo-900'
+                        : 'bg-white border-slate-200 text-slate-600'
+                    }`}
+                  >
+                    Tengah Semester (STS)
                   </button>
 
                   <button
@@ -679,13 +818,13 @@ export const GradingModule: React.FC = () => {
                       type: 'akhir_semester',
                       title: 'Sumatif Akhir Semester (SAS)'
                     })}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${
+                    className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition text-center leading-tight ${
                       newAssessmentData.type === 'akhir_semester'
-                        ? 'bg-amber-50 border-amber-500 text-amber-900'
+                        ? 'bg-teal-50 border-teal-500 text-teal-900'
                         : 'bg-white border-slate-200 text-slate-600'
                     }`}
                   >
-                    Sumatif Akhir Semester (SAS)
+                    Akhir Semester (SAS)
                   </button>
                 </div>
               </div>
@@ -759,6 +898,7 @@ export const GradingModule: React.FC = () => {
                 Sumatif Lingkup Materi (SLM)
               </th>
               <th rowSpan={2} className="py-1 px-1 border-r border-slate-900 w-16 bg-slate-200 font-bold">Rata-Rata SLM</th>
+              <th rowSpan={2} className="py-1 px-1 border-r border-slate-900 w-14 font-bold">STS</th>
               <th rowSpan={2} className="py-1 px-1 border-r border-slate-900 w-14 font-bold">SAS</th>
               <th rowSpan={2} className="py-1 px-1 border-r border-slate-900 w-14 font-bold">Nilai Akhir (NA)</th>
               <th rowSpan={2} className="py-1 px-1 w-16 bg-slate-200 font-black">NA Dibulatkan</th>
@@ -794,6 +934,7 @@ export const GradingModule: React.FC = () => {
                 )}
 
                 <td className="py-1 px-1 border-r border-slate-900 font-bold bg-slate-50">{row.avgSLM}</td>
+                <td className="py-1 px-1 border-r border-slate-900 font-bold">{row.stsScore}</td>
                 <td className="py-1 px-1 border-r border-slate-900 font-bold">{row.sasScore}</td>
                 <td className="py-1 px-1 border-r border-slate-900">{row.finalScore}</td>
                 <td className="py-1 px-1 font-black bg-slate-100">{row.roundedFinal}</td>

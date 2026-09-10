@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, Firestore, setLogLevel } from 'firebase/firestore';
 import firebaseConfigData from '../../firebase-applet-config.json';
 
 const firebaseConfig = {
@@ -18,8 +18,26 @@ if (!getApps().length) {
   app = getApp();
 }
 
+// Silence noisy internal network connection warning logs from the browser console
+try {
+  setLogLevel('silent');
+} catch {
+  // Ignore fallback
+}
+
 // Use specific databaseId if provided in config
 const databaseId = firebaseConfigData.firestoreDatabaseId || '(default)';
-export const db: Firestore = getFirestore(app, databaseId);
+
+let firestoreDb: Firestore;
+try {
+  // Force long polling immediately to avoid the initial WebSocket failure in iframe and sandboxed environments
+  firestoreDb = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+  }, databaseId);
+} catch {
+  firestoreDb = getFirestore(app, databaseId);
+}
+
+export const db: Firestore = firestoreDb;
 
 export default app;
