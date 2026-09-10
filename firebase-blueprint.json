@@ -1,0 +1,210 @@
+{
+  "entities": {
+    "SchoolSettings": {
+      "title": "SchoolSettings",
+      "description": "Pengaturan identitas sekolah, kepala sekolah, tahun ajaran, dan semester",
+      "type": "object",
+      "properties": {
+        "schoolName": { "type": "string" },
+        "npsn": { "type": "string" },
+        "foundationName": { "type": "string" },
+        "academicYear": { "type": "string" },
+        "semester": { "type": "string" },
+        "headmasterName": { "type": "string" },
+        "headmasterNip": { "type": "string" }
+      },
+      "required": ["schoolName", "academicYear", "semester"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Data identitas guru dan staf pengajar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "nip": { "type": "string" },
+        "gender": { "type": "string", "enum": ["L", "P"] },
+        "email": { "type": "string" },
+        "phone": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "ClassRoom": {
+      "title": "ClassRoom",
+      "description": "Data rombongan belajar / kelas",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "grade": { "type": "number" },
+        "homeroomTeacherId": { "type": "string" },
+        "academicYear": { "type": "string" }
+      },
+      "required": ["name", "grade"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Data peserta didik",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "name": { "type": "string" },
+        "nis": { "type": "string" },
+        "nisn": { "type": "string" },
+        "gender": { "type": "string", "enum": ["L", "P"] }
+      },
+      "required": ["name", "classId"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Mata pelajaran",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "teacherId": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "ScheduleEntry": {
+      "title": "ScheduleEntry",
+      "description": "Jadwal pelajaran mingguan kelas",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "day": { "type": "string" },
+        "slotId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "teacherId": { "type": "string" }
+      },
+      "required": ["classId", "day", "slotId", "subjectId"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Catatan presensi harian siswa per kelas",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "date": { "type": "string" },
+        "recordedBy": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["classId", "date"]
+    },
+    "TeachingJournal": {
+      "title": "TeachingJournal",
+      "description": "Jurnal pembelajaran mengajar guru harian",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "date": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "materialSummary": { "type": "string" }
+      },
+      "required": ["classId", "date", "teacherId"]
+    },
+    "ClassSubjectAssessment": {
+      "title": "ClassSubjectAssessment",
+      "description": "Pengolahan nilai asesmen sumatif per mapel dan kelas",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["classId", "subjectId"]
+    },
+    "StudentIncident": {
+      "title": "StudentIncident",
+      "description": "Catatan kejadian / insiden murid",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "handling": { "type": "string" },
+        "handlerId": { "type": "string" }
+      },
+      "required": ["date", "description"]
+    },
+    "MultimediaBooking": {
+      "title": "MultimediaBooking",
+      "description": "Jadwal dan reservasi penggunaan Ruang Multimedia sekolah oleh guru",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "day": { "type": "string" },
+        "slotId": { "type": "string" },
+        "subjectName": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "classId": { "type": "string" },
+        "className": { "type": "string" },
+        "purpose": { "type": "string" },
+        "bookedBy": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["date", "day", "slotId", "subjectName", "teacherName"]
+    }
+  },
+  "firestore": {
+    "/system/school_settings": {
+      "schema": "SchoolSettings",
+      "description": "Dokumen tunggal pengaturan identitas sekolah"
+    },
+    "/system/time_slots": {
+      "schema": "object",
+      "description": "Dokumen tunggal daftar jam pelajaran"
+    },
+    "/teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Koleksi data guru sekolah"
+    },
+    "/classes/{classId}": {
+      "schema": "ClassRoom",
+      "description": "Koleksi rombongan belajar / kelas"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Koleksi data siswa"
+    },
+    "/subjects/{subjectId}": {
+      "schema": "Subject",
+      "description": "Koleksi mata pelajaran"
+    },
+    "/schedules/{scheduleId}": {
+      "schema": "ScheduleEntry",
+      "description": "Koleksi jadwal mingguan kelas"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "AttendanceRecord",
+      "description": "Koleksi data presensi harian per kelas"
+    },
+    "/journals/{journalId}": {
+      "schema": "TeachingJournal",
+      "description": "Koleksi jurnal pembelajaran guru"
+    },
+    "/assessments/{assessmentId}": {
+      "schema": "ClassSubjectAssessment",
+      "description": "Koleksi pengolahan nilai siswa"
+    },
+    "/incidents/{incidentId}": {
+      "schema": "StudentIncident",
+      "description": "Koleksi catatan kejadian murid"
+    },
+    "/multimedia_bookings/{bookingId}": {
+      "schema": "MultimediaBooking",
+      "description": "Koleksi jadwal pemesanan dan penggunaan ruang multimedia"
+    }
+  }
+}

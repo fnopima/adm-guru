@@ -18,14 +18,15 @@ import {
   ShieldAlert,
   Menu,
   X,
-  Sparkles
+  Sparkles,
+  MonitorPlay
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LoginModal } from '../auth/LoginModal';
 import { ChangePasswordModal } from '../auth/ChangePasswordModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 
-export type NavigationTab = 'settings' | 'schedule' | 'attendance' | 'journal' | 'grades' | 'incidents';
+export type NavigationTab = 'settings' | 'schedule' | 'attendance' | 'journal' | 'grades' | 'incidents' | 'multimedia';
 
 interface SidebarProps {
   activeTab: NavigationTab;
@@ -66,6 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'journal' as NavigationTab, label: 'Jurnal Mengajar', icon: BookOpen },
     { id: 'grades' as NavigationTab, label: 'Pengolahan Nilai', icon: Award },
     { id: 'incidents' as NavigationTab, label: 'Kejadian Murid', icon: ShieldAlert },
+    { id: 'multimedia' as NavigationTab, label: 'Jadwal Penggunaan Ruang Multimedia', icon: MonitorPlay },
   ];
 
   const academicNavItems = [
@@ -281,6 +283,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       case 'journal': return 'Jurnal Pembelajaran Guru';
       case 'grades': return 'Pengolahan Nilai Asesmen';
       case 'incidents': return 'Catatan Kejadian Murid';
+      case 'multimedia': return 'Jadwal Penggunaan Ruang Multimedia';
       default: return 'Sistem Informasi Guru';
     }
   };

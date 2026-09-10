@@ -7,6 +7,7 @@ import { AttendanceModule } from './components/attendance/AttendanceModule';
 import { JournalModule } from './components/journal/JournalModule';
 import { GradingModule } from './components/grades/GradingModule';
 import { IncidentModule } from './components/incidents/IncidentModule';
+import { MultimediaScheduleModule } from './components/multimedia/MultimediaScheduleModule';
 import { LoginModal } from './components/auth/LoginModal';
 import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
 
@@ -46,6 +47,7 @@ const AppContent: React.FC = () => {
           {activeTab === 'journal' && <JournalModule />}
           {activeTab === 'grades' && <GradingModule />}
           {activeTab === 'incidents' && <IncidentModule />}
+          {activeTab === 'multimedia' && <MultimediaScheduleModule />}
         </main>
 
         {/* Footer */}

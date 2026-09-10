@@ -163,3 +163,19 @@ export interface StudentIncident {
   category?: string;
   createdAt: string;
 }
+
+export interface MultimediaBooking {
+  id: string;
+  date: string; // YYYY-MM-DD
+  day: 'Senin' | 'Selasa' | 'Rabu' | 'Kamis' | 'Jumat';
+  slotId: string; // references TimeSlot
+  subjectName: string; // nama mata pelajaran
+  teacherName: string; // guru pengampu
+  teacherId?: string; // ID guru pengampu
+  classId?: string; // ID kelas/rombel
+  className?: string; // Nama kelas/rombel
+  purpose?: string; // Keperluan / materi penggunaan
+  bookedBy: string; // Nama / ID guru atau user pemesan
+  createdAt: string;
+  updatedAt?: string;
+}

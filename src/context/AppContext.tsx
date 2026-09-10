@@ -23,7 +23,8 @@ import {
   TeachingJournal, 
   ClassSubjectAssessment, 
   StudentIncident,
-  AttendanceStatus
+  AttendanceStatus,
+  MultimediaBooking
 } from '../types';
 import { 
   initialSchoolSettings, 
@@ -85,6 +86,10 @@ interface AppContextType {
   addIncident: (incident: Omit<StudentIncident, 'id' | 'createdAt'>) => Promise<string>;
   updateIncident: (id: string, incident: Partial<StudentIncident>) => Promise<void>;
   deleteIncident: (id: string) => Promise<void>;
+
+  multimediaBookings: MultimediaBooking[];
+  saveMultimediaBooking: (booking: Omit<MultimediaBooking, 'id' | 'createdAt'> & { id?: string }) => Promise<string>;
+  deleteMultimediaBooking: (id: string) => Promise<void>;
 
   // Permissions helpers
   isSyncing: boolean;
@@ -193,6 +198,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [journals, setJournals] = useState<TeachingJournal[]>([]);
   const [assessments, setAssessments] = useState<ClassSubjectAssessment[]>([]);
   const [incidents, setIncidents] = useState<StudentIncident[]>([]);
+  const [multimediaBookings, setMultimediaBookings] = useState<MultimediaBooking[]>([]);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
 
@@ -214,6 +220,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let unsubscribeJournals: (() => void) | undefined;
     let unsubscribeAssessments: (() => void) | undefined;
     let unsubscribeIncidents: (() => void) | undefined;
+    let unsubscribeMultimedia: (() => void) | undefined;
 
     const setupListeners = async () => {
       try {
@@ -373,8 +380,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             setIncidents([]);
           }
-          setSyncStatus('synced');
         }, (err) => console.warn('Incidents sync err:', err));
+
+        // Multimedia bookings listener
+        const multimediaCol = collection(db, 'multimedia_bookings');
+        unsubscribeMultimedia = onSnapshot(multimediaCol, (snap) => {
+          if (!snap.empty) {
+            const list: MultimediaBooking[] = [];
+            snap.forEach((d) => {
+              const data = d.data() as any;
+              list.push({
+                id: d.id,
+                date: data.date || '',
+                day: data.day || 'Senin',
+                slotId: data.slotId || '',
+                subjectName: data.subjectName || '',
+                teacherName: data.teacherName || '',
+                teacherId: data.teacherId || '',
+                classId: data.classId || '',
+                className: data.className || '',
+                purpose: data.purpose || '',
+                bookedBy: data.bookedBy || '',
+                createdAt: data.createdAt || new Date().toISOString(),
+                updatedAt: data.updatedAt,
+              });
+            });
+            setMultimediaBookings(list);
+          } else {
+            setMultimediaBookings([]);
+          }
+          setSyncStatus('synced');
+        }, (err) => console.warn('Multimedia bookings sync err:', err));
 
       } catch (err) {
         console.error('Error initializing Firestore sync:', err);
@@ -396,6 +432,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       unsubscribeJournals?.();
       unsubscribeAssessments?.();
       unsubscribeIncidents?.();
+      unsubscribeMultimedia?.();
     };
   }, []);
 
@@ -1044,6 +1081,59 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Multimedia Room Schedule / Bookings
+  const saveMultimediaBooking = async (
+    booking: Omit<MultimediaBooking, 'id' | 'createdAt'> & { id?: string }
+  ): Promise<string> => {
+    setIsSyncing(true);
+    const bookingId = booking.id || `mm_${booking.date}_${booking.slotId}`;
+    const now = new Date().toISOString();
+
+    setMultimediaBookings(prev => {
+      const existingIdx = prev.findIndex(b => b.id === bookingId);
+      const newBooking: MultimediaBooking = {
+        ...booking,
+        id: bookingId,
+        createdAt: existingIdx >= 0 ? prev[existingIdx].createdAt : now,
+        updatedAt: now,
+      };
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx] = newBooking;
+        return copy;
+      }
+      return [...prev, newBooking];
+    });
+
+    try {
+      const existing = multimediaBookings.find(b => b.id === bookingId);
+      const dataToSave: MultimediaBooking = {
+        ...booking,
+        id: bookingId,
+        createdAt: existing?.createdAt || now,
+        updatedAt: now,
+      };
+      await safeSetDoc(doc(db, 'multimedia_bookings', bookingId), dataToSave);
+    } catch (e) {
+      console.warn('Sync multimedia booking error:', e);
+    } finally {
+      setIsSyncing(false);
+    }
+    return bookingId;
+  };
+
+  const deleteMultimediaBooking = async (id: string) => {
+    setIsSyncing(true);
+    setMultimediaBookings(prev => prev.filter(b => b.id !== id));
+    try {
+      await deleteDoc(doc(db, 'multimedia_bookings', id));
+    } catch (e) {
+      console.warn('Sync delete multimedia booking error:', e);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Reset to default data helper (dinonaktifkan untuk melindungi data nyata sekolah di database agar tidak tertimpa)
   const resetToDefaultData = async () => {
     console.warn('resetToDefaultData dinonaktifkan untuk memastikan data sekolah di Firestore tidak tertimpa.');
@@ -1094,6 +1184,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addIncident,
         updateIncident,
         deleteIncident,
+        multimediaBookings,
+        saveMultimediaBooking,
+        deleteMultimediaBooking,
         isSyncing,
         syncStatus,
         canEditSchedule,
