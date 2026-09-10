@@ -95,7 +95,7 @@ interface AppContextType {
   isSyncing: boolean;
   syncStatus: 'synced' | 'syncing' | 'offline';
   canEditSchedule: (classId: string) => boolean;
-  canEditGrades: (subjectId: string, classId: string) => boolean;
+  canEditGrades: (arg1: string, arg2: string) => boolean;
   isHomeroomTeacher: (classId: string) => boolean;
   resetToDefaultData: () => Promise<void>;
 }
@@ -573,13 +573,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [currentUser, classes]);
 
   // Can edit grades: Admin or Teacher teaching that subject in that class (or any teacher if Tim Asatidzah)
-  const canEditGrades = useCallback((subjectId: string, classId: string) => {
+  // Supports both (subjectId, classId) and (classId, subjectId) parameter orders seamlessly
+  const canEditGrades = useCallback((arg1: string, arg2: string) => {
     if (currentUser.role === 'admin') return true;
-    const subj = subjects.find(s => s.id === subjectId && s.classId === classId);
+    if (!currentUser.teacherId && currentUser.id === 'admin') return true;
+    if (!arg1 || !arg2) return false;
+
+    // Determine which argument is subjectId and which is classId
+    let subj = subjects.find(s => s.id === arg1 || s.id === arg2);
+    const classId = classes.some(c => c.id === arg1) ? arg1 : (classes.some(c => c.id === arg2) ? arg2 : '');
+
+    // Fallback search if not matched by direct ID
+    if (!subj) {
+      subj = subjects.find(s => (s.id === arg1 && s.classId === arg2) || (s.id === arg2 && s.classId === arg1));
+    }
+
     if (!subj) return false;
+
+    // 1. Tim Asatidzah allows any teacher to edit
     if (subj.teacherId === 'TIM_ASATIDZAH') return true;
-    return Boolean(subj.teacherId === currentUser.teacherId);
-  }, [currentUser, subjects]);
+
+    // 2. Direct teacher ID match
+    const userTeacherId = currentUser.teacherId || currentUser.id;
+    if (userTeacherId && subj.teacherId === userTeacherId) return true;
+
+    // 3. Name match in case teacher document IDs were mapped
+    const assignedTeacher = teachers.find(t => t.id === subj.teacherId);
+    if (assignedTeacher && currentUser.name && assignedTeacher.name.trim().toLowerCase() === currentUser.name.trim().toLowerCase()) {
+      return true;
+    }
+
+    // 4. Check lesson schedule (jadwal pelajaran)
+    if (classId && userTeacherId) {
+      const isScheduled = schedules.some(
+        sch => sch.classId === classId && (sch.subjectId === subj?.id || sch.subjectId === subj?.code) && sch.teacherId === userTeacherId
+      );
+      if (isScheduled) return true;
+    }
+
+    return false;
+  }, [currentUser, subjects, classes, teachers, schedules]);
 
   // Settings CRUD
   const updateSchoolSettings = async (settings: Partial<SchoolSettings>) => {

@@ -25,6 +25,7 @@ export const GradingModule: React.FC = () => {
     students,
     subjects,
     assessments,
+    schedules,
     saveAssessmentItem,
     deleteAssessmentItem,
     saveStudentScores,
@@ -90,7 +91,30 @@ export const GradingModule: React.FC = () => {
   }, [students, selectedClassId]);
 
   // Check RBAC permission for this class and subject
-  const canEdit = canEditGrades(selectedClassId, selectedSubjectId);
+  const canEdit = useMemo(() => {
+    if (currentUser.role === 'admin') return true;
+    if (!selectedClassId || !selectedSubjectId) return false;
+
+    // Check with AppContext helper (supports either argument order)
+    if (canEditGrades(selectedSubjectId, selectedClassId)) return true;
+    if (canEditGrades(selectedClassId, selectedSubjectId)) return true;
+
+    // Direct checks
+    if (isTimAsatidzah) return true;
+    const userTeacherId = currentUser.teacherId || currentUser.id;
+    if (userTeacherId && currentSubject?.teacherId === userTeacherId) return true;
+    if (subjectTeacher && currentUser.name && subjectTeacher.name.trim().toLowerCase() === currentUser.name.trim().toLowerCase()) return true;
+
+    // Check lesson schedules
+    if (userTeacherId) {
+      const isScheduledTeacher = schedules.some(
+        sch => sch.classId === selectedClassId && (sch.subjectId === selectedSubjectId || sch.subjectId === currentSubject?.code) && sch.teacherId === userTeacherId
+      );
+      if (isScheduledTeacher) return true;
+    }
+
+    return false;
+  }, [currentUser, selectedClassId, selectedSubjectId, canEditGrades, isTimAsatidzah, currentSubject, subjectTeacher, schedules]);
 
   // Get current assessment record for this class & subject
   const recordId = `${selectedClassId}_${selectedSubjectId}`;
