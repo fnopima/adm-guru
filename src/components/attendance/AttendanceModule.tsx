@@ -15,6 +15,12 @@ import {
 import { useApp } from '../../context/AppContext';
 import { AttendanceStatus } from '../../types';
 import { PrintModal } from '../common/PrintModal';
+import { 
+  DateInputDDMMYYYY, 
+  formatISOToDDMMYYYY, 
+  getIndonesianDayName, 
+  stepDateByDays 
+} from '../common/DateInputDDMMYYYY';
 
 const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -35,14 +41,30 @@ export const AttendanceModule: React.FC = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('daily');
 
   // Daily State
-  const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    // Current date in YYYY-MM-DD
+  const getTodayLocalISO = () => {
     const d = new Date();
-    return d.toISOString().split('T')[0];
-  });
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayLocalISO);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const handlePrevDay = () => {
+    setSelectedDate(prev => stepDateByDays(prev, -1));
+  };
+
+  const handleNextDay = () => {
+    setSelectedDate(prev => stepDateByDays(prev, 1));
+  };
+
+  const handleToday = () => {
+    setSelectedDate(getTodayLocalISO());
+  };
 
   // Monthly Recap State
   const [recapYear, setRecapYear] = useState<number>(new Date().getFullYear());
@@ -58,6 +80,16 @@ export const AttendanceModule: React.FC = () => {
 
   const currentClass = classes.find(c => c.id === selectedClassId);
   const homeroomTeacher = teachers.find(t => t.id === currentClass?.homeroomTeacherId);
+
+  // List of recorded attendance dates for this class sorted descending (most recent first)
+  const recordedDatesForClass = useMemo(() => {
+    if (!selectedClassId) return [];
+    const set = new Set<string>();
+    attendanceRecords
+      .filter(r => r.classId === selectedClassId && r.date)
+      .forEach(r => set.add(r.date));
+    return Array.from(set).sort().reverse();
+  }, [attendanceRecords, selectedClassId]);
 
   // Get current day's record for this class
   const recordId = `${selectedClassId}_${selectedDate}`;
@@ -129,7 +161,7 @@ export const AttendanceModule: React.FC = () => {
         notes: dailyStatusMap[st.id]?.notes || '',
       }));
       await saveDailyAttendance(selectedClassId, selectedDate, recordsToSave);
-      showNotification('success', `Presensi kelas ${currentClass?.name} tanggal ${selectedDate} berhasil disimpan!`);
+      showNotification('success', `Presensi kelas ${currentClass?.name} tanggal ${formatISOToDDMMYYYY(selectedDate)} berhasil disimpan!`);
     } catch (e: any) {
       showNotification('error', 'Gagal menyimpan presensi: ' + e.message);
     } finally {
@@ -288,18 +320,77 @@ export const AttendanceModule: React.FC = () => {
               </select>
             </div>
 
-            {/* Date Selector (Daily Mode) */}
+            {/* Date Selector & Navigation (Daily Mode) */}
             {viewMode === 'daily' ? (
-              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs">
-                <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                <span className="font-semibold text-slate-600">Tanggal:</span>
-                <input
-                  type="date"
+              <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 border border-slate-200 p-1 rounded-xl text-xs shadow-2xs">
+                {/* Tombol Mundur ke Hari Sebelumnya */}
+                <button
+                  type="button"
+                  onClick={handlePrevDay}
+                  id="btn-prev-day"
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-700 font-bold rounded-lg border border-slate-200 transition cursor-pointer shadow-2xs"
+                  title="Mundur ke hari sebelumnya (H-1)"
+                >
+                  <ChevronLeft className="w-4 h-4 text-emerald-700 shrink-0" />
+                  <span className="hidden sm:inline">Hari Sebelumnya</span>
+                </button>
+
+                {/* Pemilihan Tanggal (Konsisten Format DD/MM/YYYY) */}
+                <DateInputDDMMYYYY
                   value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
+                  onChange={setSelectedDate}
                   id="input-attendance-date"
-                  className="bg-transparent font-bold text-slate-900 outline-hidden cursor-pointer"
+                  showDayName={true}
+                  className="bg-white border-slate-300 font-extrabold text-slate-900"
+                  title="Pilih tanggal presensi (Format DD/MM/YYYY)"
                 />
+
+                {/* Tombol Maju ke Hari Setelahnya */}
+                <button
+                  type="button"
+                  onClick={handleNextDay}
+                  id="btn-next-day"
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-700 font-bold rounded-lg border border-slate-200 transition cursor-pointer shadow-2xs"
+                  title="Maju ke hari setelahnya (H+1)"
+                >
+                  <span className="hidden sm:inline">Hari Setelahnya</span>
+                  <ChevronRight className="w-4 h-4 text-emerald-700 shrink-0" />
+                </button>
+
+                {/* Tombol Cepat Kembali ke Hari Ini */}
+                {selectedDate !== getTodayLocalISO() && (
+                  <button
+                    type="button"
+                    onClick={handleToday}
+                    id="btn-today"
+                    className="px-2 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11px] font-bold rounded-lg transition cursor-pointer"
+                    title="Kembali ke tanggal hari ini"
+                  >
+                    Hari Ini
+                  </button>
+                )}
+
+                {/* Dropdown Tanggal Tersimpan (Semua Format DD/MM/YYYY) */}
+                {recordedDatesForClass.length > 0 && (
+                  <div className="relative flex items-center">
+                    <select
+                      value={recordedDatesForClass.includes(selectedDate) ? selectedDate : ''}
+                      onChange={(e) => {
+                        if (e.target.value) setSelectedDate(e.target.value);
+                      }}
+                      id="select-recorded-dates"
+                      className="bg-white border border-slate-300 text-slate-700 text-xs rounded-lg px-2 py-1.5 font-semibold outline-hidden cursor-pointer hover:border-emerald-400 max-w-[150px] sm:max-w-[200px] truncate"
+                      title="Pilih langsung dari tanggal presensi yang sudah tersimpan (Format DD/MM/YYYY)"
+                    >
+                      <option value="">-- Tanggal Tersimpan ({recordedDatesForClass.length}) --</option>
+                      {recordedDatesForClass.map(d => (
+                        <option key={d} value={d}>
+                          {formatISOToDDMMYYYY(d)} ({getIndonesianDayName(d)})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             ) : (
               /* Month & Year Selector (Monthly Mode) */

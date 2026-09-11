@@ -20,6 +20,7 @@ import { useApp } from '../../context/AppContext';
 import { StudentIncident } from '../../types';
 import { PrintModal } from '../common/PrintModal';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { DateInputDDMMYYYY } from '../common/DateInputDDMMYYYY';
 
 export const IncidentModule: React.FC = () => {
   const {
@@ -516,13 +517,14 @@ export const IncidentModule: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">
-                    Tanggal Kejadian <span className="text-rose-600">*</span>
+                    Tanggal Kejadian <span className="text-rose-600">*</span> <span className="text-slate-400 font-normal text-xs">(DD/MM/YYYY)</span>
                   </label>
-                  <input
-                    type="date"
+                  <DateInputDDMMYYYY
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(date) => setFormData({ ...formData, date })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-bold"
+                    showDayName={true}
+                    placeholder="Pilih Tanggal (DD/MM/YYYY)"
                     required
                   />
                 </div>

@@ -23,6 +23,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Teacher, ClassRoom, Student, Subject } from '../../types';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { DateInputDDMMYYYY } from '../common/DateInputDDMMYYYY';
 
 type SettingsTab = 'school' | 'teachers' | 'classes' | 'students' | 'subjects';
 
@@ -1541,18 +1542,18 @@ export const SettingsModule: React.FC = () => {
                   </div>
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">
-                      Tanggal Lahir <span className="text-slate-400 font-normal text-xs">(DD MM YYYY)</span>
+                      Tanggal Lahir <span className="text-slate-400 font-normal text-xs">(DD/MM/YYYY)</span>
                     </label>
-                    <input
-                      type="date"
+                    <DateInputDDMMYYYY
                       value={studentForm.birthDate}
-                      onChange={(e) => setStudentForm({ ...studentForm, birthDate: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg cursor-pointer"
+                      onChange={(date) => setStudentForm({ ...studentForm, birthDate: date })}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg"
+                      placeholder="Pilih Tanggal Lahir (DD/MM/YYYY)"
                       required
                     />
                     {studentForm.birthDate && (
                       <p className="text-[11px] text-slate-500 mt-1">
-                        Format: <span className="font-mono font-semibold text-slate-700">{formatBirthDate(studentForm.birthDate)}</span>
+                        Format Tampilan: <span className="font-mono font-semibold text-slate-700">{formatBirthDate(studentForm.birthDate)}</span>
                       </p>
                     )}
                   </div>

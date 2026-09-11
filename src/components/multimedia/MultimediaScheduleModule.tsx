@@ -26,6 +26,7 @@ import { useApp } from '../../context/AppContext';
 import { MultimediaBooking, TimeSlot } from '../../types';
 import { PrintModal } from '../common/PrintModal';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { DateInputDDMMYYYY } from '../common/DateInputDDMMYYYY';
 
 const DAYS = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] as const;
 type DayName = typeof DAYS[number];
@@ -146,9 +147,9 @@ export const MultimediaScheduleModule: React.FC = () => {
     setSelectedMonday(getMondayOfWeek(new Date()));
   };
 
-  const handleDateJump = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.value) return;
-    const parsed = new Date(e.target.value);
+  const handleDateJump = (dateStr: string) => {
+    if (!dateStr) return;
+    const parsed = new Date(dateStr);
     if (!isNaN(parsed.getTime())) {
       setSelectedMonday(getMondayOfWeek(parsed));
     }
@@ -407,18 +408,18 @@ export const MultimediaScheduleModule: React.FC = () => {
               )}
             </div>
 
-            {/* Jump to date picker */}
+            {/* Jump to date picker (Format DD/MM/YYYY) */}
             <div className="flex items-center gap-1.5 text-xs text-slate-500">
               <label htmlFor="input-jump-week-date" className="font-medium text-slate-600 hidden sm:inline">
                 Pilih Tanggal:
               </label>
-              <input
-                type="date"
+              <DateInputDDMMYYYY
                 id="input-jump-week-date"
                 value={formatDateISO(selectedMonday)}
                 onChange={handleDateJump}
-                className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:border-emerald-300 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer"
-                title="Pilih tanggal untuk langsung menuju pekan tersebut"
+                showDayName={true}
+                className="bg-white border-slate-200 text-xs font-semibold text-slate-700 hover:border-emerald-300"
+                title="Pilih tanggal untuk langsung menuju pekan tersebut (Format DD/MM/YYYY)"
               />
             </div>
           </div>

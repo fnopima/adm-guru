@@ -20,6 +20,7 @@ import { useApp } from '../../context/AppContext';
 import { TeachingJournal } from '../../types';
 import { PrintModal } from '../common/PrintModal';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { DateInputDDMMYYYY } from '../common/DateInputDDMMYYYY';
 
 // Helper to compute day name in Indonesian from date string (YYYY-MM-DD)
 const getIndonesianDayName = (dateStr: string): string => {
@@ -466,25 +467,25 @@ export const JournalModule: React.FC = () => {
               </button>
             </div>
 
-            {/* Custom Date Pickers: Dari s/d Sampai */}
+            {/* Custom Date Pickers: Dari s/d Sampai (Format DD/MM/YYYY) */}
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
                 <span className="text-slate-500 font-medium text-[11px]">Dari:</span>
-                <input
-                  type="date"
+                <DateInputDDMMYYYY
                   value={startDate}
-                  onChange={(e) => handleCustomDateChange('start', e.target.value)}
-                  className="bg-transparent font-medium text-slate-800 outline-hidden text-xs cursor-pointer"
+                  onChange={(val) => handleCustomDateChange('start', val)}
+                  className="border-none bg-transparent py-0 px-1 shadow-none font-bold text-xs"
+                  placeholder="DD/MM/YYYY"
                 />
               </div>
               <span className="text-slate-400 font-bold">s/d</span>
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
                 <span className="text-slate-500 font-medium text-[11px]">Sampai:</span>
-                <input
-                  type="date"
+                <DateInputDDMMYYYY
                   value={endDate}
-                  onChange={(e) => handleCustomDateChange('end', e.target.value)}
-                  className="bg-transparent font-medium text-slate-800 outline-hidden text-xs cursor-pointer"
+                  onChange={(val) => handleCustomDateChange('end', val)}
+                  className="border-none bg-transparent py-0 px-1 shadow-none font-bold text-xs"
+                  placeholder="DD/MM/YYYY"
                 />
               </div>
 
@@ -712,12 +713,12 @@ export const JournalModule: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Tanggal Pembelajaran</label>
-                  <input
-                    type="date"
+                  <label className="block font-semibold text-slate-700 mb-1">
+                    Tanggal Pembelajaran <span className="text-slate-400 font-normal text-xs">(DD/MM/YYYY)</span>
+                  </label>
+                  <DateInputDDMMYYYY
                     value={formData.date}
-                    onChange={(e) => {
-                      const newDate = e.target.value;
+                    onChange={(newDate) => {
                       const autoDay = getIndonesianDayName(newDate);
                       setFormData(prev => ({
                         ...prev,
@@ -726,6 +727,8 @@ export const JournalModule: React.FC = () => {
                       }));
                     }}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-bold"
+                    showDayName={true}
+                    placeholder="Pilih Tanggal (DD/MM/YYYY)"
                     required
                   />
                 </div>
