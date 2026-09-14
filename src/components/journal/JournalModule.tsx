@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   BookOpen, 
   Calendar, 
@@ -9,18 +9,20 @@ import {
   Trash2, 
   Search, 
   CheckCircle2, 
-  AlertCircle,
-  FileText,
-  User,
-  Filter,
-  RotateCcw,
-  CalendarRange
+  AlertCircle, 
+  FileText, 
+  User, 
+  Filter, 
+  RotateCcw, 
+  CalendarRange,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { TeachingJournal } from '../../types';
 import { PrintModal } from '../common/PrintModal';
 import { ConfirmModal } from '../common/ConfirmModal';
-import { DateInputDDMMYYYY } from '../common/DateInputDDMMYYYY';
+import { DateInputDDMMYYYY, formatISOToDDMMYYYY } from '../common/DateInputDDMMYYYY';
 
 // Helper to compute day name in Indonesian from date string (YYYY-MM-DD)
 const getIndonesianDayName = (dateStr: string): string => {
@@ -262,6 +264,49 @@ export const JournalModule: React.FC = () => {
       return matchClass && matchSubj && matchStart && matchEnd && matchDay && matchSearch;
     });
   }, [journals, selectedClassId, selectedSubjectFilter, startDate, endDate, selectedDayFilter, searchTerm]);
+
+  // Urutkan jurnal dari yang paling baru ke paling lama (Date descending)
+  const sortedJournals = useMemo(() => {
+    return [...filteredJournals].sort((a, b) => {
+      // 1. Primary: Tanggal terbaru ke terlama
+      const dateDiff = (b.date || '').localeCompare(a.date || '');
+      if (dateDiff !== 0) return dateDiff;
+
+      // 2. Secondary: Jam pembelajaran / periode terbaru
+      const periodDiff = (b.period || '').localeCompare(a.period || '');
+      if (periodDiff !== 0) return periodDiff;
+
+      // 3. Tertiary: Waktu pencatatan (createdAt)
+      return (b.createdAt || '').localeCompare(a.createdAt || '');
+    });
+  }, [filteredJournals]);
+
+  // Pagination: Maksimal 10 jurnal per tampilan
+  const ITEMS_PER_PAGE = 10;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Reset ke halaman 1 setiap kali filter atau pencarian berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedClassId, selectedSubjectFilter, startDate, endDate, selectedDayFilter, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedJournals.length / ITEMS_PER_PAGE));
+
+  // Pastikan currentPage tetap dalam rentang valid
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  // 10 Jurnal yang tampil pada halaman aktif saat ini
+  const paginatedJournals = useMemo(() => {
+    const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedJournals.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  }, [sortedJournals, currentPage]);
+
+  const startDisplayIndex = sortedJournals.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const endDisplayIndex = Math.min(currentPage * ITEMS_PER_PAGE, sortedJournals.length);
 
   // Label for active date range
   const dateRangeDisplayLabel = useMemo(() => {
@@ -522,8 +567,45 @@ export const JournalModule: React.FC = () => {
               )}
             </div>
 
-            <div className="text-xs font-bold text-emerald-900">
-              Ditemukan: <span className="text-emerald-700 font-extrabold">{filteredJournals.length}</span> Catatan Jurnal
+            <div className="flex items-center gap-2.5 flex-wrap ml-auto sm:ml-0">
+              <div className="text-xs font-bold text-emerald-900">
+                Ditemukan: <span className="text-emerald-700 font-extrabold">{sortedJournals.length}</span> Catatan Jurnal
+                {sortedJournals.length > 0 && (
+                  <span className="text-slate-600 font-normal ml-1">
+                    (Tampil {startDisplayIndex}-{endDisplayIndex}, Hal. {currentPage}/{totalPages})
+                  </span>
+                )}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1 bg-white px-1.5 py-0.5 rounded-lg border border-emerald-200/80 shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    id="btn-top-prev-10-journals"
+                    className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-emerald-800 hover:bg-emerald-100 disabled:opacity-30 disabled:cursor-not-allowed text-[11px] font-bold transition cursor-pointer"
+                    title="10 Jurnal Sebelumnya"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Sebelumnya</span>
+                  </button>
+                  <span className="px-1 text-emerald-950 font-extrabold text-[11px]">
+                    {currentPage}/{totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    id="btn-top-next-10-journals"
+                    className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-emerald-800 hover:bg-emerald-100 disabled:opacity-30 disabled:cursor-not-allowed text-[11px] font-bold transition cursor-pointer"
+                    title="10 Jurnal Setelahnya"
+                  >
+                    <span className="hidden md:inline">Setelahnya</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -551,7 +633,7 @@ export const JournalModule: React.FC = () => {
         </div>
       ) : (
       <div className="space-y-3">
-        {filteredJournals.length === 0 ? (
+        {sortedJournals.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-2xs">
             <FileText className="w-10 h-10 text-emerald-300 mx-auto mb-2" />
             <p className="text-sm font-bold text-slate-800">Tidak ada catatan jurnal untuk filter ini</p>
@@ -560,7 +642,7 @@ export const JournalModule: React.FC = () => {
             </p>
           </div>
         ) : (
-          filteredJournals.map(journal => {
+          paginatedJournals.map(journal => {
             const cls = classes.find(c => c.id === journal.classId);
             return (
               <div 
@@ -583,7 +665,7 @@ export const JournalModule: React.FC = () => {
 
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-emerald-900 font-bold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/60">
-                      {journal.day}, {journal.date}
+                      {journal.day}, {formatISOToDDMMYYYY(journal.date)}
                     </span>
                     <div className="flex items-center gap-1">
                       <button
@@ -618,7 +700,7 @@ export const JournalModule: React.FC = () => {
                             confirmId: `confirm-delete-journal-${journal.id}`,
                             message: (
                               <p>
-                                Apakah Anda yakin ingin menghapus catatan jurnal mengajar <strong>{journal.subjectName}</strong> ({journal.date})? Tindakan ini tidak dapat dibatalkan.
+                                Apakah Anda yakin ingin menghapus catatan jurnal mengajar <strong>{journal.subjectName}</strong> ({formatISOToDDMMYYYY(journal.date)})? Tindakan ini tidak dapat dibatalkan.
                               </p>
                             ),
                             onConfirm: async () => {
@@ -676,6 +758,87 @@ export const JournalModule: React.FC = () => {
               </div>
             );
           })
+        )}
+
+        {/* Pagination Controls (Maksimal 10 Jurnal per halaman) */}
+        {sortedJournals.length > 0 && (
+          <div className="bg-white rounded-2xl p-4 border border-emerald-100 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-3">
+            <div className="text-slate-600 font-medium text-center sm:text-left">
+              Menampilkan <span className="font-extrabold text-slate-900">{startDisplayIndex} - {endDisplayIndex}</span> dari{' '}
+              <span className="font-extrabold text-emerald-800">{sortedJournals.length}</span> jurnal{' '}
+              <span className="text-slate-300 mx-1">|</span> Halaman{' '}
+              <span className="font-extrabold text-slate-900">{currentPage}</span> dari{' '}
+              <span className="font-extrabold text-slate-900">{totalPages}</span>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              {/* Tombol 10 Jurnal Sebelumnya */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentPage(p => Math.max(1, p - 1));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                disabled={currentPage <= 1}
+                id="btn-prev-10-journals"
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-emerald-50 active:bg-emerald-100 text-slate-700 hover:text-emerald-950 font-bold rounded-xl border border-slate-200 hover:border-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-700 disabled:hover:border-slate-200 transition cursor-pointer shadow-2xs"
+                title="Tampilkan 10 jurnal sebelumnya"
+              >
+                <ChevronLeft className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>10 Jurnal Sebelumnya</span>
+              </button>
+
+              {/* Nomor Halaman Cepat (jika total halaman > 1) */}
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1 px-1">
+                  {Array.from({ length: totalPages }, (_, idx) => idx + 1)
+                    .filter(page => {
+                      return page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                    })
+                    .map((page, idx, arr) => {
+                      const prev = arr[idx - 1];
+                      const showEllipsis = prev && page - prev > 1;
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsis && <span className="px-1 text-slate-400 font-bold">...</span>}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCurrentPage(page);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={`w-8 h-8 rounded-lg font-extrabold text-xs transition cursor-pointer flex items-center justify-center ${
+                              currentPage === page
+                                ? 'bg-emerald-700 text-white shadow-xs'
+                                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
+                            }`}
+                            title={`Buka halaman ${page}`}
+                          >
+                            {page}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* Tombol 10 Jurnal Setelahnya */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentPage(p => Math.min(totalPages, p + 1));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                disabled={currentPage >= totalPages}
+                id="btn-next-10-journals"
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-emerald-50 active:bg-emerald-100 text-slate-700 hover:text-emerald-950 font-bold rounded-xl border border-slate-200 hover:border-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-700 disabled:hover:border-slate-200 transition cursor-pointer shadow-2xs"
+                title="Tampilkan 10 jurnal setelahnya"
+              >
+                <span>10 Jurnal Setelahnya</span>
+                <ChevronRight className="w-4 h-4 text-emerald-700 shrink-0" />
+              </button>
+            </div>
+          </div>
         )}
       </div>
       )}
@@ -880,11 +1043,11 @@ export const JournalModule: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredJournals.map((jrn, i) => (
+            {sortedJournals.map((jrn, i) => (
               <tr key={jrn.id} className="border-b border-slate-900 align-top">
                 <td className="py-2 px-1 text-center border-r border-slate-900 font-mono">{i + 1}</td>
                 <td className="py-2 px-2 border-r border-slate-900 text-center font-medium">
-                  {jrn.day},<br/>{jrn.date}
+                  {jrn.day},<br/>{formatISOToDDMMYYYY(jrn.date)}
                 </td>
                 <td className="py-2 px-2 border-r border-slate-900 text-center font-mono">{jrn.period}</td>
                 <td className="py-2 px-2 border-r border-slate-900 font-bold">{jrn.subjectName}</td>
