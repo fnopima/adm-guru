@@ -897,7 +897,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const sanitizedRecords = records.map(r => {
       const item: { studentId: string; status: AttendanceStatus; notes?: string } = {
         studentId: r.studentId,
-        status: r.status,
+        status: r.status !== undefined ? r.status : null,
       };
       if (r.notes && r.notes.trim() !== '') {
         item.notes = r.notes.trim();

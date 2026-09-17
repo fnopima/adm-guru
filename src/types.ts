@@ -88,7 +88,7 @@ export interface ScheduleEntry {
   room?: string;
 }
 
-export type AttendanceStatus = 'H' | 'S' | 'I' | 'A';
+export type AttendanceStatus = 'H' | 'S' | 'I' | 'A' | null;
 
 export interface DailyAttendanceStudent {
   studentId: string;

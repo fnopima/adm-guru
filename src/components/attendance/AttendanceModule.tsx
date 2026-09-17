@@ -10,11 +10,13 @@ import {
   AlertCircle,
   FileSpreadsheet,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  RotateCcw
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { AttendanceStatus } from '../../types';
 import { PrintModal } from '../common/PrintModal';
+import { ConfirmModal } from '../common/ConfirmModal';
 import { 
   DateInputDDMMYYYY, 
   formatISOToDDMMYYYY, 
@@ -97,14 +99,16 @@ export const AttendanceModule: React.FC = () => {
 
   // Local state for daily edit
   const [dailyStatusMap, setDailyStatusMap] = useState<Record<string, { status: AttendanceStatus; notes: string }>>({});
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Sync local dailyStatusMap when class/date changes or record loads
+  // Default status kehadiran untuk siswa adalah null (tidak H, S, I, atau A)
   React.useEffect(() => {
     const initialMap: Record<string, { status: AttendanceStatus; notes: string }> = {};
     classStudents.forEach(st => {
       const found = existingRecord?.records.find(r => r.studentId === st.id);
       initialMap[st.id] = {
-        status: found ? found.status : 'H', // default H
+        status: found ? (found.status ?? null) : null, // default null
         notes: found?.notes || '',
       };
     });
@@ -126,10 +130,37 @@ export const AttendanceModule: React.FC = () => {
       };
     });
     setDailyStatusMap(updated);
-    showNotification('success', 'Semua siswa berhasil disetel Hadir (H)!');
+    showNotification('success', 'Semua siswa berhasil disetel Hadir (H)! Jangan lupa klik "Simpan Presensi".');
   };
 
-  // Change individual student status
+  // 1-Click: "Reset" (Kosongkan status kehadiran seluruh siswa menjadi null - Hari Libur / Tidak ada KBM)
+  const handleResetAttendance = async () => {
+    setIsSaving(true);
+    try {
+      const updated: Record<string, { status: AttendanceStatus; notes: string }> = {};
+      const recordsToSave = classStudents.map(st => {
+        updated[st.id] = {
+          status: null,
+          notes: '',
+        };
+        return {
+          studentId: st.id,
+          status: null,
+          notes: '',
+        };
+      });
+      setDailyStatusMap(updated);
+      await saveDailyAttendance(selectedClassId, selectedDate, recordsToSave);
+      setShowResetConfirm(false);
+      showNotification('success', `Presensi tanggal ${formatISOToDDMMYYYY(selectedDate)} berhasil di-reset menjadi Kosong (Libur / Tidak Ada KBM)!`);
+    } catch (e: any) {
+      showNotification('error', 'Gagal me-reset presensi: ' + e.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Change individual student status (passing null clears the status)
   const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
     setDailyStatusMap(prev => ({
       ...prev,
@@ -157,7 +188,7 @@ export const AttendanceModule: React.FC = () => {
     try {
       const recordsToSave = classStudents.map(st => ({
         studentId: st.id,
-        status: dailyStatusMap[st.id]?.status || 'H',
+        status: dailyStatusMap[st.id]?.status ?? null,
         notes: dailyStatusMap[st.id]?.notes || '',
       }));
       await saveDailyAttendance(selectedClassId, selectedDate, recordsToSave);
@@ -171,17 +202,20 @@ export const AttendanceModule: React.FC = () => {
 
   // Daily statistics
   const stats = useMemo(() => {
-    let h = 0, s = 0, i = 0, a = 0;
+    let h = 0, s = 0, i = 0, a = 0, nullCount = 0;
     classStudents.forEach(st => {
-      const stStatus = dailyStatusMap[st.id]?.status || 'H';
+      const stStatus = dailyStatusMap[st.id]?.status ?? null;
       if (stStatus === 'H') h++;
       else if (stStatus === 'S') s++;
       else if (stStatus === 'I') i++;
       else if (stStatus === 'A') a++;
+      else nullCount++;
     });
     const total = classStudents.length;
-    const presentPercentage = total > 0 ? Math.round((h / total) * 100) : 0;
-    return { h, s, i, a, total, presentPercentage };
+    const recordedTotal = h + s + i + a;
+    const presentPercentage = recordedTotal > 0 ? Math.round((h / recordedTotal) * 100) : 0;
+    const isHolidayOrEmpty = total > 0 && nullCount === total;
+    return { h, s, i, a, nullCount, total, recordedTotal, presentPercentage, isHolidayOrEmpty };
   }, [classStudents, dailyStatusMap]);
 
   // ================= MONTHLY RECAP CALCULATIONS =================
@@ -423,25 +457,37 @@ export const AttendanceModule: React.FC = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {viewMode === 'daily' ? (
               <>
                 <button
                   type="button"
                   onClick={handleSetAllPresent}
-                  disabled={!selectedClassId}
+                  disabled={!selectedClassId || classStudents.length === 0}
                   id="btn-set-all-present"
-                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 disabled:opacity-40 disabled:cursor-not-allowed text-amber-900 border border-amber-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed text-emerald-900 border border-emerald-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
                   title="Isi otomatis seluruh siswa dengan status Hadir (H)"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                   Set Semua Hadir (H)
                 </button>
 
                 <button
                   type="button"
+                  onClick={() => setShowResetConfirm(true)}
+                  disabled={!selectedClassId || classStudents.length === 0}
+                  id="btn-reset-attendance"
+                  className="px-3 py-1.5 bg-slate-50 hover:bg-rose-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 hover:text-rose-700 border border-slate-300 hover:border-rose-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+                  title="Kosongkan status kehadiran seluruh siswa menjadi null (Tidak ada KBM / Libur)"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-slate-500 hover:text-rose-600" />
+                  Reset (Libur / Null)
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleSaveDaily}
-                  disabled={!selectedClassId || isSaving}
+                  disabled={!selectedClassId || isSaving || classStudents.length === 0}
                   id="btn-save-attendance"
                   className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-sm cursor-pointer"
                 >
@@ -484,42 +530,87 @@ export const AttendanceModule: React.FC = () => {
       {/* ================= VIEW 1: PRESENSI HARIAN ================= */}
       {viewMode === 'daily' && (
         <div className="space-y-4">
+          {/* Banner Informasi Hari Libur / KBM Kosong (Jika semua siswa berstatus null) */}
+          {stats.isHolidayOrEmpty && (
+            <div className="bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-700 flex items-center gap-2.5">
+              <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
+              <div>
+                <span className="font-bold text-slate-900">Hari Libur / Tidak Ada KBM:</span> Seluruh status kehadiran siswa pada tanggal ini berstatus <strong>Kosong (Null)</strong>. Data ini tidak dihitung sebagai absensi atau alpa pada rekap bulanan.
+              </div>
+            </div>
+          )}
+
           {/* Quick Stat Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-              <div className="text-xs text-slate-500 uppercase font-bold mb-1">Hadir (H)</div>
-              <div className="text-2xl font-bold text-emerald-600">{stats.h} <span className="text-sm font-normal text-slate-400">/ {stats.total}</span></div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+              <div className="text-[11px] text-slate-500 uppercase font-bold mb-1">Hadir (H)</div>
+              <div className="text-2xl font-bold text-emerald-600">
+                {stats.h} <span className="text-xs font-normal text-slate-400">/ {stats.total}</span>
+              </div>
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-              <div className="text-xs text-slate-500 uppercase font-bold mb-1">Sakit / Izin (S/I)</div>
-              <div className="text-2xl font-bold text-amber-500">{stats.s + stats.i} <span className="text-sm font-normal text-slate-400">Siswa</span></div>
+            <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+              <div className="text-[11px] text-slate-500 uppercase font-bold mb-1">Sakit / Izin (S/I)</div>
+              <div className="text-2xl font-bold text-amber-500">
+                {stats.s + stats.i} <span className="text-xs font-normal text-slate-400">Siswa</span>
+              </div>
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-              <div className="text-xs text-slate-500 uppercase font-bold mb-1">Alpa (A)</div>
-              <div className="text-2xl font-bold text-rose-500">{stats.a} <span className="text-sm font-normal text-slate-400">Siswa</span></div>
+            <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+              <div className="text-[11px] text-slate-500 uppercase font-bold mb-1">Alpa (A)</div>
+              <div className="text-2xl font-bold text-rose-500">
+                {stats.a} <span className="text-xs font-normal text-slate-400">Siswa</span>
+              </div>
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-              <div className="text-xs text-slate-500 uppercase font-bold mb-1">Persentase Hadir</div>
-              <div className="text-2xl font-bold text-slate-800">{stats.presentPercentage}%</div>
+            <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+              <div className="text-[11px] text-slate-500 uppercase font-bold mb-1">Kosong / Libur</div>
+              <div className="text-2xl font-bold text-slate-600">
+                {stats.nullCount} <span className="text-xs font-normal text-slate-400">Siswa</span>
+              </div>
+            </div>
+
+            <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs col-span-2 sm:col-span-1">
+              <div className="text-[11px] text-slate-500 uppercase font-bold mb-1">Persentase Hadir</div>
+              <div className="text-2xl font-bold text-slate-800">
+                {stats.isHolidayOrEmpty ? (
+                  <span className="text-slate-400 font-medium text-base">Libur (-)</span>
+                ) : (
+                  `${stats.presentPercentage}%`
+                )}
+              </div>
             </div>
           </div>
 
           {/* Student Attendance List */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
+            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2">
               <h2 className="text-sm font-bold text-slate-700">
                 Daftar Siswa {currentClass?.name || ''} ({classStudents.length} Siswa)
               </h2>
-              <button 
-                type="button"
-                onClick={handleSetAllPresent}
-                className="text-xs font-semibold text-emerald-700 hover:underline cursor-pointer"
-              >
-                Set Semua Hadir (H)
-              </button>
+              <div className="flex items-center gap-2 text-xs">
+                <button 
+                  type="button"
+                  onClick={handleSetAllPresent}
+                  id="btn-table-header-set-all-present"
+                  className="font-semibold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer flex items-center gap-1"
+                  title="Isi otomatis seluruh siswa dengan status Hadir (H)"
+                >
+                  <Sparkles className="w-3 h-3 text-emerald-600" />
+                  Set Semua Hadir (H)
+                </button>
+                <span className="text-slate-300">|</span>
+                <button 
+                  type="button"
+                  onClick={() => setShowResetConfirm(true)}
+                  id="btn-table-header-reset"
+                  className="font-semibold text-slate-600 hover:text-rose-600 hover:underline cursor-pointer flex items-center gap-1"
+                  title="Kosongkan status kehadiran seluruh siswa hari ini (Libur / Tidak ada KBM)"
+                >
+                  <RotateCcw className="w-3 h-3 text-slate-500" />
+                  Reset (Libur / Null)
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -529,7 +620,7 @@ export const AttendanceModule: React.FC = () => {
                     <th className="p-3 w-12 text-center">NO</th>
                     <th className="p-3">NAMA LENGKAP SISWA</th>
                     <th className="p-3 w-28">NISN / NIS</th>
-                    <th className="p-3 text-center w-52">STATUS KEHADIRAN</th>
+                    <th className="p-3 text-center w-56">STATUS KEHADIRAN</th>
                     <th className="p-3">KETERANGAN / ALASAN</th>
                   </tr>
                 </thead>
@@ -542,7 +633,7 @@ export const AttendanceModule: React.FC = () => {
                     </tr>
                   ) : (
                     classStudents.map((st, idx) => {
-                      const cur = dailyStatusMap[st.id] || { status: 'H', notes: '' };
+                      const cur = dailyStatusMap[st.id] || { status: null, notes: '' };
 
                       return (
                         <tr key={st.id} className="hover:bg-slate-50/70 transition">
@@ -553,10 +644,10 @@ export const AttendanceModule: React.FC = () => {
                           </td>
                           <td className="p-3 font-mono text-slate-500 text-xs">{st.nisn || st.nis || '-'}</td>
                           
-                          {/* Radio pill buttons for H, S, I, A */}
+                          {/* Radio pill buttons for H, S, I, A + Clear (Null) */}
                           <td className="p-3 text-center">
                             <div className="inline-flex items-center gap-1">
-                              {(['H', 'S', 'I', 'A'] as AttendanceStatus[]).map((statusKey) => {
+                              {(['H', 'S', 'I', 'A'] as const).map((statusKey) => {
                                 const isSelected = cur.status === statusKey;
                                 let activeClass = '';
                                 if (statusKey === 'H') activeClass = 'bg-emerald-600 text-white font-bold shadow-xs';
@@ -568,15 +659,31 @@ export const AttendanceModule: React.FC = () => {
                                   <button
                                     key={statusKey}
                                     type="button"
-                                    onClick={() => handleStatusChange(st.id, statusKey)}
+                                    onClick={() => handleStatusChange(st.id, isSelected ? null : statusKey)}
                                     className={`w-7 h-7 flex items-center justify-center rounded text-xs transition cursor-pointer ${
                                       isSelected ? activeClass : 'border border-slate-200 text-slate-400 font-bold hover:bg-slate-50'
                                     }`}
+                                    title={isSelected ? `Status ${statusKey} aktif. Klik untuk batalkan (jadikan Kosong/Null)` : `Set status ${statusKey}`}
                                   >
                                     {statusKey}
                                   </button>
                                 );
                               })}
+
+                              {cur.status !== null ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStatusChange(st.id, null)}
+                                  className="w-5 h-7 flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer text-xs font-bold ml-0.5"
+                                  title="Batalkan / Kosongkan status siswa ini (Null)"
+                                >
+                                  ×
+                                </button>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 italic px-1 select-none font-medium">
+                                  -
+                                </span>
+                              )}
                             </div>
                           </td>
 
@@ -749,6 +856,28 @@ export const AttendanceModule: React.FC = () => {
           </table>
         </div>
       </PrintModal>
+
+      {/* Modal Konfirmasi Reset Kehadiran */}
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        title="Reset Presensi (Hari Libur / Tidak Ada KBM)"
+        confirmId="confirm-reset-daily-attendance"
+        confirmText="Ya, Reset Kehadiran (Null)"
+        isDanger={true}
+        isLoading={isSaving}
+        message={
+          <div className="space-y-2 text-xs text-slate-600">
+            <p>
+              Apakah Anda yakin ingin me-reset status kehadiran seluruh siswa kelas <strong>{currentClass?.name}</strong> pada tanggal <strong>{formatISOToDDMMYYYY(selectedDate)} ({getIndonesianDayName(selectedDate)})</strong> menjadi <strong>Kosong (Null)</strong>?
+            </p>
+            <p className="bg-amber-50 p-2.5 rounded-lg border border-amber-200 text-amber-900">
+              💡 <strong>Tips:</strong> Gunakan opsi ini saat tidak ada kegiatan belajar mengajar (KBM) atau hari libur sekolah. Siswa yang berstatus null tidak akan dihitung hadir maupun alpa pada rekapitulasi bulanan.
+            </p>
+          </div>
+        }
+        onConfirm={handleResetAttendance}
+      />
     </div>
   );
 };
